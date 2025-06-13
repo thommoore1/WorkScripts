@@ -68,10 +68,10 @@ for df in dfList:
         pass
 
 for df in dfList:
-    df['time'] = df['timestamp'].apply(convert_iso_to_unix)
-    df['Time_In_PST'] = df['timestamp'].apply(convert_timestamp_to_pacific)
+    df.loc[:, 'time'] = df['timestamp'].apply(convert_iso_to_unix)
+    df.loc[:, 'Time_In_PST'] = df['timestamp'].apply(convert_timestamp_to_pacific)
     df.rename(columns={'timestamp': 'Time_In_ISO'}, inplace=True)
-    print(df.head())
+    df = df.copy()
 
 for df in dfList:
     DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
@@ -81,7 +81,6 @@ for df in dfList:
         scheduleData = scheduleDataOth
 
     for row in df.itertuples():
-        df.at[row.Index, 'Time_In_PST'] = convert_timestamp_to_pacific(getattr(row, 'Time_In_ISO'))
         for schedRow in scheduleData.itertuples():
             timeA = convert_string_to_time(getattr(schedRow, 'TimeStart'))
             timeB = convert_string_to_time(getattr(schedRow, 'TimeEnd'))
@@ -89,7 +88,9 @@ for df in dfList:
                 df.at[row.Index, 'class'] = getattr(schedRow, 'Class')
                 break
 
-for i, df in enumerate(dfList):
+for i in range(len(dfList)):
+    df = dfList[i].copy()
+    df.loc[:, 'class'] = df['class'].str.strip()
     df = df[df['class'] != 'DELETE'].reset_index(drop=True)
     df.to_csv(csvPathList[i], index=False)
     dfList[i] = df
