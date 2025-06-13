@@ -26,6 +26,9 @@ def convert_iso_to_unix(iso_timestamp):
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
+def get_day_of_week(date_obj):
+    day_of_week = date_obj.strftime("%A")
+
 pNum = input("Enter the participant number: ")
 
 rawData = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P001OrHrRAW.csv")
@@ -67,11 +70,28 @@ for df in dfList:
 for df in dfList:
     df['time'] = df['timestamp'].apply(convert_iso_to_unix)
     df['Time_In_PST'] = df['timestamp'].apply(convert_timestamp_to_pacific)
-    df.rename(columns={'timestamp': 'time_in_ISO'}, inplace=True)
+    df.rename(columns={'timestamp': 'Time_In_ISO'}, inplace=True)
     print(df.head())
 
+# label with schedule
 
-# Add Unix and PST time
-# label with schedule datadf.rename(columns={'old_name': 'new_name'}, inplace=True)
+for df in dfList:
+    DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
+    if DayOfWeek == 'Friday':
+        scheduleData = scheduleDataFri
+    else:
+        scheduleData = scheduleDataOth
+
+    for row in df.itertuples():
+        df.at[row.Index, 'Time_In_PST'] = convert_timestamp_to_pacific(getattr(row, 'Time_In_ISO'))
+        for schedRow in scheduleData.itertuples():
+            timeA = convert_string_to_time(getattr(schedRow, 'TimeStart'))
+            timeB = convert_string_to_time(getattr(schedRow, 'TimeEnd'))
+            if  timeA < df.at[row.Index, 'Time_In_PST'] <= timeB:
+                df.at[row.Index, 'class'] = getattr(schedRow, 'Class')
+                break
+    df = df[rawData['class'] != 'DELETE']
+    df.reset_index(drop=True, inplace=True)
+    print(df.head)
 
 # Save to file
