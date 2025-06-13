@@ -31,7 +31,7 @@ def get_day_of_week(date_obj):
 
 pNum = input("Enter the participant number: ")
 
-rawData = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P001OrHrRAW.csv")
+rawData = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P0" + pNum + "OrHrRAW.csv")
 
 if pNum == "04" or pNum == "05":
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
