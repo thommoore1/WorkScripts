@@ -21,6 +21,11 @@ def convert_iso_to_pacific_date(timestamp):
     dt_pacific = dt_utc.astimezone(pacific_tz)
     return dt_pacific.date()
 
+def convert_iso_to_unix(iso_timestamp):
+    dt = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=timezone.utc)
+    return int(dt.timestamp())
+
 pNum = input("Enter the participant number: ")
 
 rawData = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P001OrHrRAW.csv")
@@ -35,6 +40,7 @@ else:
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
 rawData.insert(0, 'class', "NONE")
 rawData.insert(1, 'Time_In_PST', zero_time)
+rawData.insert(2, 'time', 0)
 
 prevDate = convert_iso_to_pacific_date(rawData.iloc[0]['timestamp'])
 start_idx = 0
@@ -50,23 +56,20 @@ dfList.append(rawData.iloc[start_idx:])
 
 csvPathList = []
 
-print(rawData.head)
-
 for df in dfList:
-    if df.empty:
-        print("HELLO")
-        continue
-
-    print("FDSUIHDFSN")
-    print(df.head)
     timestamp = convert_iso_to_pacific_date(df.iloc[0]['timestamp'])
     date_str = timestamp.strftime("%Y-%m-%d")
-    input("The date is: " + date_str)
-    csvPathList = []
     file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P0" + pNum + "OrHrLabeled" + date_str + ".csv"
     csvPathList.append(file_path)
     with open(file_path, 'w') as f:
         pass
+
+for df in dfList:
+    df['time'] = df['timestamp'].apply(convert_iso_to_unix)
+    df['Time_In_PST'] = df['timestamp'].apply(convert_timestamp_to_pacific)
+    df.rename(columns={'timestamp': 'time_in_ISO'}, inplace=True)
+    print(df.head())
+
 
 # Add Unix and PST time
 # label with schedule datadf.rename(columns={'old_name': 'new_name'}, inplace=True)
