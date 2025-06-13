@@ -52,10 +52,10 @@ dfList = []
 for idx, row in enumerate(rawData.itertuples()):
     currDate = convert_iso_to_pacific_date(row.timestamp)
     if currDate != prevDate:
-        dfList.append(rawData.iloc[start_idx:idx])
+        dfList.append(rawData.iloc[start_idx:idx].copy())
         start_idx = idx
         prevDate = currDate
-dfList.append(rawData.iloc[start_idx:])
+dfList.append(rawData.iloc[start_idx:].copy())
 
 csvPathList = []
 
