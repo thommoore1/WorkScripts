@@ -35,9 +35,20 @@ zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
 rawData.insert(0, 'class', "NONE")
 rawData.insert(1, 'Time_In_PST', zero_time)
 
+prevDate = datetime.date(1900, 1 , 1)
+start_idx = 0
 dfList = []
 
 # create different data frames
+for row in rawData.itertuples():
+    currDate = convert_iso_to_pacific_date(getattr(row, 'timestamp'))
+    if currDate != prevDate:
+        dfList.append(rawData.iloc[start_idx:row.Index])
+        start_idx = row.Index
+        prevDate = currDate
+dfList.append(rawData.iloc[start_idx:])
+
+
 # Add Unix and PST time
 # label with schedule data
 # Save to file
