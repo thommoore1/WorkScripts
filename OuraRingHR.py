@@ -27,7 +27,7 @@ def convert_iso_to_unix(iso_timestamp):
     return int(dt.timestamp())
 
 def get_day_of_week(date_obj):
-    day_of_week = date_obj.strftime("%A")
+    return date_obj.strftime("%A")
 
 pNum = input("Enter the participant number: ")
 
@@ -73,8 +73,6 @@ for df in dfList:
     df.rename(columns={'timestamp': 'Time_In_ISO'}, inplace=True)
     print(df.head())
 
-# label with schedule
-
 for df in dfList:
     DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
     if DayOfWeek == 'Friday':
@@ -90,8 +88,8 @@ for df in dfList:
             if  timeA < df.at[row.Index, 'Time_In_PST'] <= timeB:
                 df.at[row.Index, 'class'] = getattr(schedRow, 'Class')
                 break
-    df = df[rawData['class'] != 'DELETE']
-    df.reset_index(drop=True, inplace=True)
-    print(df.head)
 
-# Save to file
+for i, df in enumerate(dfList):
+    df = df[df['class'] != 'DELETE'].reset_index(drop=True)
+    df.to_csv(csvPathList[i], index=False)
+    dfList[i] = df
