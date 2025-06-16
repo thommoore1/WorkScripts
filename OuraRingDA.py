@@ -33,13 +33,6 @@ pNum = input("Enter the participant number: ")
 
 rawData = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/DailyActivity/P0" + pNum + "OrHrRAW.csv")
 
-if pNum == "04" or pNum == "05":
-    scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
-    scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_M-Th.csv")
-else:
-    scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
-    scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
-
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
 rawData.insert(0, 'class', "NONE")
 rawData.insert(1, 'Time_In_PST', zero_time)
