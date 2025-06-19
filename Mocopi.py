@@ -36,16 +36,16 @@ parentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi"
 
 directories = [d for d in os.listdir(parentPath) if os.path.isdir(os.path.join(parentPath, d))]
 
-rawDataPaths = []
+rawDataCSVs = []
 
+#Storing different csv in to list
 for dir_name in directories:
     folder_path = Path(parentPath) / dir_name
-    files_in_dir = [str(file) for file in folder_path.iterdir() if file.is_file()]
-    rawDataPaths.extend(files_in_dir) 
+    for file in folder_path.iterdir():
+        df = pd.read_csv(file)
+        rawDataCSVs.append(df)
 
-
-#continue from here
-
+#Storing schedule path depending on P#
 if pNum == "04" or pNum == "05":
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
     scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_M-Th.csv")
@@ -53,10 +53,12 @@ else:
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
     scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
 
+#adding time and class columns
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
-rawData.insert(0, 'class', "NONE")
-rawData.insert(1, 'Time_In_PST', zero_time)
-rawData.insert(2, 'time', 0)
+for rawData in rawDataPaths:
+    rawData.insert(0, 'class', "NONE")
+    rawData.insert(1, 'Time_In_PST', zero_time)
+    rawData.insert(2, 'time', 0)
 
 prevDate = convert_iso_to_pacific_date(rawData.iloc[0]['timestamp'])
 start_idx = 0
