@@ -45,7 +45,7 @@ def getSensorLocation(fileName):
         "0E3E9": "WristRDeviceOne",
         "0EE55": "WristRDeviceTwo",
         "12801": "WristRDeviceThree",
-        "OEA70": "WristRDeviceFour",
+        "0EA70": "WristRDeviceFour",
         "14A51": "WristLDeviceOne",
         "134F5": "WristLDeviceTwo",
         "1447A": "WristLDeviceThree",
@@ -64,74 +64,82 @@ def getSensorLocation(fileName):
             return label
     return "None"
 
-#Gathering file location stuff
+# Prompt for participant number
 pNum = input("Enter the participant number: ")
-rawParentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Raw"
-directories = [d for d in os.listdir(rawParentPath) if os.path.isdir(os.path.join(rawParentPath, d))]
-rawDataDFs = []
-rawDataCSVNames = []
 
-#Storing different csv in to list
+#Gathering parent paths
+rawParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/Mocopi/Raw"
+labeledParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/Mocopi/Labeled"
+
+# all of the directories in raw data folder
+directories = [d for d in os.listdir(rawParentPath) if os.path.isdir(os.path.join(rawParentPath, d))]
+
+# Group raw CSVs by (sensor, date)
+grouped_raw_data = defaultdict(list)
+
 for dir_name in directories:
     folder_path = Path(rawParentPath) / dir_name
     for file in folder_path.iterdir():
-        rawDataCSVNames.append(file)
-        df = pd.read_csv(file)
-        rawDataDFs.append(df)
+        dataFrame = pd.read_csv(file)
+        dateTime = datetime.strptime(dataFrame.iloc[0]['Timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+        dateOnly = dateTime.date().strftime("%Y-%m-%d")
+        sensor_label = getSensorLocation(str(file))
+        grouped_raw_data[(sensor_label, dateOnly)].append(dataFrame)
 
-#Storing schedule path depending on P#
-if pNum == "04" or pNum == "05":
+# Combine groups & build save paths
+dataFrames = []
+csvPathList = []
+
+for (sensor_label, dateOnly), dfs in grouped_raw_data.items():
+    combined_df = pd.concat(dfs, ignore_index=True).sort_values(by="Timestamp").reset_index(drop=True)
+    dataFrames.append(combined_df)
+
+    dirPath = os.path.join(labeledParentPath, dateOnly)
+    os.makedirs(dirPath, exist_ok=True)
+
+    file_path = os.path.join(dirPath, f"P0{pNum}Mocopi{sensor_label}{dateOnly}.csv")
+    csvPathList.append(file_path)
+
+# Load schedule data
+if pNum in ["04", "05"]:
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
     scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_M-Th.csv")
 else:
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
     scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
 
-#adding time and class columns
+# Add time & class columns
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
-for rawData in rawDataDFs:
+for rawData in dataFrames:
     rawData.insert(0, 'class', "NONE")
     rawData.insert(1, 'Time_In_PST', zero_time)
     rawData.insert(2, 'time', 0)
 
-#Creating locations for saving
-labeledParentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled"
-LabeledPathList = []
-for rawData, fileName in zip(rawDataDFs, rawDataCSVNames):
-    dt = datetime.strptime(rawData.iloc[0]['Timestamp'], "%Y-%m-%d %H:%M:%S.%f")
-    dateOnly = dt.date().strftime("%Y-%m-%d")
-    dirPath = labeledParentPath + "/" + dateOnly 
-    if not os.path.exists(dirPath):
-        os.makedirs(dirPath)
-    file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled/" + dateOnly + "/P0" + pNum + "Mocopi" + getSensorLocation(str(fileName)) + "_" + dateOnly + ".csv"
-    LabeledPathList.append(file_path)
-    with open(file_path, 'w') as f:
-        pass
+# Process timestamp columns
+for dataFrame in dataFrames:
+    dataFrame.loc[:, 'time'] = dataFrame['Timestamp'].apply(convert_iso_to_unix)
+    dataFrame.loc[:, 'Time_In_PST'] = dataFrame['Timestamp'].apply(convert_timestamp_to_pacific)
+    dataFrame.rename(columns={'Timestamp': 'Time_In_ISO'}, inplace=True)
+    dataFrame = dataFrame.copy()
 
-for df in dfList:
-    df.loc[:, 'time'] = df['timestamp'].apply(convert_iso_to_unix)
-    df.loc[:, 'Time_In_PST'] = df['timestamp'].apply(convert_timestamp_to_pacific)
-    df.rename(columns={'timestamp': 'Time_In_ISO'}, inplace=True)
-    df = df.copy()
+# Label classes using schedule
+for dataFrame in dataFrames:
+    DayOfWeek = get_day_of_week(datetime.fromtimestamp(dataFrame.iloc[0]['time']))
+    scheduleData = scheduleDataFri if DayOfWeek == 'Friday' else scheduleDataOth
 
-for df in dfList:
-    DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
-    if DayOfWeek == 'Friday':
-        scheduleData = scheduleDataFri
-    else:
-        scheduleData = scheduleDataOth
-
-    for row in df.itertuples():
+    for row in dataFrame.itertuples():
         for schedRow in scheduleData.itertuples():
             timeA = convert_string_to_time(getattr(schedRow, 'TimeStart'))
             timeB = convert_string_to_time(getattr(schedRow, 'TimeEnd'))
-            if  timeA < df.at[row.Index, 'Time_In_PST'] <= timeB:
-                df.at[row.Index, 'class'] = getattr(schedRow, 'Class')
+            if timeA < dataFrame.at[row.Index, 'Time_In_PST'] <= timeB:
+                dataFrame.at[row.Index, 'class'] = getattr(schedRow, 'Class')
                 break
 
-for i in range(len(dfList)):
-    df = dfList[i].copy()
-    df.loc[:, 'class'] = df['class'].str.strip()
-    df = df[df['class'] != 'DELETE'].reset_index(drop=True)
-    df.to_csv(csvPathList[i], index=False)
-    dfList[i] = df
+
+#clean and save
+for i in range(len(dataFrames)):
+    dataFrame = dataFrames[i].copy()
+    dataFrame.loc[:, 'class'] = dataFrame['class'].str.strip()
+    dataFrame = dataFrame[dataFrame['class'] != 'DELETE'].reset_index(drop=True)
+    dataFrame.to_csv(csvPathList[i], index=False)
+    dataFrame[i] = dataFrame
