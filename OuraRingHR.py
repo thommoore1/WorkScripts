@@ -1,7 +1,6 @@
 from datetime import datetime, timezone, date
 import pytz
 import pandas as pd
-import os
 
 def convert_timestamp_to_pacific(timestamp):
     pacific_tz = pytz.timezone('America/Los_Angeles')
