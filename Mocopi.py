@@ -30,12 +30,10 @@ def convert_iso_to_unix(iso_timestamp):
 def get_day_of_week(date_obj):
     return date_obj.strftime("%A")
 
+#Gathering file location stuff
 pNum = input("Enter the participant number: ")
-
 parentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi"
-
 directories = [d for d in os.listdir(parentPath) if os.path.isdir(os.path.join(parentPath, d))]
-
 rawDataCSVs = []
 
 #Storing different csv in to list
@@ -59,18 +57,6 @@ for rawData in rawDataPaths:
     rawData.insert(0, 'class', "NONE")
     rawData.insert(1, 'Time_In_PST', zero_time)
     rawData.insert(2, 'time', 0)
-
-prevDate = convert_iso_to_pacific_date(rawData.iloc[0]['timestamp'])
-start_idx = 0
-dfList = []
-
-for idx, row in enumerate(rawData.itertuples()):
-    currDate = convert_iso_to_pacific_date(row.timestamp)
-    if currDate != prevDate:
-        dfList.append(rawData.iloc[start_idx:idx].copy())
-        start_idx = idx
-        prevDate = currDate
-dfList.append(rawData.iloc[start_idx:].copy())
 
 csvPathList = []
 
