@@ -30,18 +30,53 @@ def convert_iso_to_unix(iso_timestamp):
 def get_day_of_week(date_obj):
     return date_obj.strftime("%A")
 
+def getSensorLocation(fileName):
+    mapping = {
+        "11CCD": "HeadDevice1",
+        "132D3": "HeadDevice2",
+        "1092A": "HeadDevice3",
+        "13CF2": "HeadDevice4",
+        "12144": "HipDevice1",
+        "114C8": "HipDevice2",
+        "10B1F": "HipDevice3",
+        "1211E": "HipDevice4",
+        "OE3E9": "WristRDevice1",
+        "OEE55": "WristRDevice2",
+        "12801": "WristRDevice3",
+        "0EA70": "WristRDevice4",
+        "14A51": "WristLDevice1",
+        "134F5": "WristLDevice2",
+        "1447A": "WristLDevice3",
+        "14A53": "WristLDevice4",
+        "1503C": "AnkleRDevice1",
+        "13B8F": "AnkleRDevice2",
+        "13B06": "AnkleRDevice3",
+        "158A6": "AnkleRDevice4",
+        "16E17": "AnkleLDevice1",
+        "16FB1": "AnkleLDevice2",
+        "142A8": "AnkleLDevice3",
+        "16CA7": "AnkleLDevice4",
+    }
+
+    for code, label in mapping.items():
+        if code in fileName:
+            return label
+    return None
+
 #Gathering file location stuff
 pNum = input("Enter the participant number: ")
-parentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi"
-directories = [d for d in os.listdir(parentPath) if os.path.isdir(os.path.join(parentPath, d))]
-rawDataCSVs = []
+rawParentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Raw"
+directories = [d for d in os.listdir(rawParentPath) if os.path.isdir(os.path.join(rawParentPath, d))]
+rawDataDFs = []
+rawDataCSVNames = []
 
 #Storing different csv in to list
 for dir_name in directories:
-    folder_path = Path(parentPath) / dir_name
+    folder_path = Path(rawParentPath) / dir_name
     for file in folder_path.iterdir():
+        rawDataCSVNames.append(file)
         df = pd.read_csv(file)
-        rawDataCSVs.append(df)
+        rawDataDFs.append(df)
 
 #Storing schedule path depending on P#
 if pNum == "04" or pNum == "05":
@@ -53,18 +88,22 @@ else:
 
 #adding time and class columns
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
-for rawData in rawDataPaths:
+for rawData in rawDataDFs:
     rawData.insert(0, 'class', "NONE")
     rawData.insert(1, 'Time_In_PST', zero_time)
     rawData.insert(2, 'time', 0)
 
-csvPathList = []
-
-for df in dfList:
-    timestamp = convert_iso_to_pacific_date(df.iloc[0]['timestamp'])
-    date_str = timestamp.strftime("%Y-%m-%d")
-    file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/OuraRing/HeartRate/P0" + pNum + "OrHrLabeled" + date_str + ".csv"
-    csvPathList.append(file_path)
+#Creating locations for saving
+labeledParentPath = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled"
+LabeledPathList = []
+for rawData, fileName in zip(rawDataDFs, rawDataCSVNames):
+    dt = datetime.strptime(rawData.iloc[0]['Timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    dateOnly = dt.date().strftime("%Y-%m-%d")
+    dirPath = labeledParentPath + "/date_only"
+    if not os.path.exists(dirPath):
+        os.makedirs(dirPath)
+    file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled/" + dateOnly + "/P0" + pNum + "Mocopi" + getSensorLocation(fileName) + dateOnly + ".csv"
+    LabeledPathList.append(file_path)
     with open(file_path, 'w') as f:
         pass
 
