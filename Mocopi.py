@@ -1,7 +1,9 @@
-from datetime import datetime, timezone, date
-import pytz
 import pandas as pd
+import pytz
 import os
+
+from datetime import datetime, timezone, date
+from collections import defaultdict
 from pathlib import Path
 
 def convert_timestamp_to_pacific(timestamp):
@@ -32,36 +34,35 @@ def get_day_of_week(date_obj):
 
 def getSensorLocation(fileName):
     mapping = {
-        "11CCD": "HeadDevice1",
-        "132D3": "HeadDevice2",
-        "1092A": "HeadDevice3",
-        "13CF2": "HeadDevice4",
-        "12144": "HipDevice1",
-        "114C8": "HipDevice2",
-        "10B1F": "HipDevice3",
-        "1211E": "HipDevice4",
-        "OE3E9": "WristRDevice1",
-        "OEE55": "WristRDevice2",
-        "12801": "WristRDevice3",
-        "0EA70": "WristRDevice4",
-        "14A51": "WristLDevice1",
-        "134F5": "WristLDevice2",
-        "1447A": "WristLDevice3",
-        "14A53": "WristLDevice4",
-        "1503C": "AnkleRDevice1",
-        "13B8F": "AnkleRDevice2",
-        "13B06": "AnkleRDevice3",
-        "158A6": "AnkleRDevice4",
-        "16E17": "AnkleLDevice1",
-        "16FB1": "AnkleLDevice2",
-        "142A8": "AnkleLDevice3",
-        "16CA7": "AnkleLDevice4",
+        "11CCD": "HeadDeviceOne",
+        "132D3": "HeadDeviceTwo",
+        "1092A": "HeadDeviceThree",
+        "13CF2": "HeadDeviceFour",
+        "12144": "HipDeviceOne",
+        "114C8": "HipDeviceTwo",
+        "10B1F": "HipDeviceThree",
+        "1211E": "HipDeviceFour",
+        "0E3E9": "WristRDeviceOne",
+        "0EE55": "WristRDeviceTwo",
+        "12801": "WristRDeviceThree",
+        "OEA70": "WristRDeviceFour",
+        "14A51": "WristLDeviceOne",
+        "134F5": "WristLDeviceTwo",
+        "1447A": "WristLDeviceThree",
+        "14A53": "WristLDeviceFour",
+        "1503C": "AnkleRDeviceOne",
+        "13B8F": "AnkleRDeviceTwo",
+        "13B06": "AnkleRDeviceThree",
+        "158A6": "AnkleRDeviceFour",
+        "16E17": "AnkleLDeviceOne",
+        "16FB1": "AnkleLDeviceTwo",
+        "142A8": "AnkleLDeviceThree",
+        "16CA7": "AnkleLDeviceFour",
     }
-
     for code, label in mapping.items():
         if code in fileName:
             return label
-    return None
+    return "None"
 
 #Gathering file location stuff
 pNum = input("Enter the participant number: ")
@@ -99,10 +100,10 @@ LabeledPathList = []
 for rawData, fileName in zip(rawDataDFs, rawDataCSVNames):
     dt = datetime.strptime(rawData.iloc[0]['Timestamp'], "%Y-%m-%d %H:%M:%S.%f")
     dateOnly = dt.date().strftime("%Y-%m-%d")
-    dirPath = labeledParentPath + "/date_only"
+    dirPath = labeledParentPath + "/" + dateOnly 
     if not os.path.exists(dirPath):
         os.makedirs(dirPath)
-    file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled/" + dateOnly + "/P0" + pNum + "Mocopi" + getSensorLocation(fileName) + dateOnly + ".csv"
+    file_path = "/Users/tommoore/Documents/GitHub/Research/P0" + pNum + "/Mocopi/Labeled/" + dateOnly + "/P0" + pNum + "Mocopi" + getSensorLocation(str(fileName)) + "_" + dateOnly + ".csv"
     LabeledPathList.append(file_path)
     with open(file_path, 'w') as f:
         pass
