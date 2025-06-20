@@ -6,28 +6,17 @@ from datetime import datetime, timezone, date
 from collections import defaultdict
 from pathlib import Path
 
-def convert_timestamp_to_pacific(timestamp):
-    pacific_tz = pytz.timezone('America/Los_Angeles')
-    dt_utc = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt_utc = dt_utc.replace(tzinfo=timezone.utc)
-    dt_pacific = dt_utc.astimezone(pacific_tz)
-    return dt_pacific.time()
+def convert_to_unix_time(timestamp_str):
+    dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
+    return dt.timestamp()
+
+def extract_time_only(timestamp_str):
+    dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
+    return dt.time()
 
 def convert_string_to_time(time_string):
     time_obj = datetime.strptime(time_string, "%H:%M:%S").time()
     return time_obj
-
-def convert_iso_to_pacific_date(timestamp):
-    pacific_tz = pytz.timezone('America/Los_Angeles')
-    dt_utc = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt_utc = dt_utc.replace(tzinfo=timezone.utc)
-    dt_pacific = dt_utc.astimezone(pacific_tz)
-    return dt_pacific.date()
-
-def convert_iso_to_unix(iso_timestamp):
-    dt = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=timezone.utc)
-    return int(dt.timestamp())
 
 def get_day_of_week(date_obj):
     return date_obj.strftime("%A")
@@ -64,6 +53,16 @@ def getSensorLocation(fileName):
             return label
     return "None"
 
+
+now = datetime.now()
+
+# Just get the time part
+current_time = now.strftime("%H:%M:%S")
+
+print("Current Time:", current_time)
+
+
+
 # Prompt for participant number
 pNum = input("Enter the participant number: ")
 
@@ -89,7 +88,7 @@ for dir_name in directories:
 # Combine groups & build save paths
 dataFrames = []
 csvPathList = []
-
+print("combine things")
 for (sensor_label, dateOnly), dfs in grouped_raw_data.items():
     combined_df = pd.concat(dfs, ignore_index=True).sort_values(by="Timestamp").reset_index(drop=True)
     dataFrames.append(combined_df)
@@ -99,7 +98,7 @@ for (sensor_label, dateOnly), dfs in grouped_raw_data.items():
 
     file_path = os.path.join(dirPath, f"P0{pNum}Mocopi{sensor_label}{dateOnly}.csv")
     csvPathList.append(file_path)
-
+print("schedData")
 # Load schedule data
 if pNum in ["04", "05"]:
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
@@ -107,21 +106,23 @@ if pNum in ["04", "05"]:
 else:
     scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
     scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
-
+print("columns")
 # Add time & class columns
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
 for rawData in dataFrames:
     rawData.insert(0, 'class', "NONE")
     rawData.insert(1, 'Time_In_PST', zero_time)
-    rawData.insert(2, 'time', 0)
-
+    rawData.insert(2, 'time', 0.0)
+print("timestamps")
 # Process timestamp columns
-for dataFrame in dataFrames:
-    dataFrame.loc[:, 'time'] = dataFrame['Timestamp'].apply(convert_iso_to_unix)
-    dataFrame.loc[:, 'Time_In_PST'] = dataFrame['Timestamp'].apply(convert_timestamp_to_pacific)
-    dataFrame.rename(columns={'Timestamp': 'Time_In_ISO'}, inplace=True)
-    dataFrame = dataFrame.copy()
+for i, dataFrame in enumerate(dataFrames):
+    dataFrame.loc[:, 'time'] = dataFrame['Timestamp'].apply(convert_to_unix_time).astype('float64')
+    dataFrame.loc[:, 'Time_In_PST'] = dataFrame['Timestamp'].apply(extract_time_only)
+    dataFrame.rename(columns={'Timestamp': 'Old Timestamp'}, inplace=True)
+    dataFrames[i] = dataFrame.copy()
 
+print("schedule")
+print(len(dataFrames))
 # Label classes using schedule
 for dataFrame in dataFrames:
     DayOfWeek = get_day_of_week(datetime.fromtimestamp(dataFrame.iloc[0]['time']))
@@ -134,12 +135,22 @@ for dataFrame in dataFrames:
             if timeA < dataFrame.at[row.Index, 'Time_In_PST'] <= timeB:
                 dataFrame.at[row.Index, 'class'] = getattr(schedRow, 'Class')
                 break
-
-
+print("schedule done")
 #clean and save
 for i in range(len(dataFrames)):
     dataFrame = dataFrames[i].copy()
     dataFrame.loc[:, 'class'] = dataFrame['class'].str.strip()
     dataFrame = dataFrame[dataFrame['class'] != 'DELETE'].reset_index(drop=True)
     dataFrame.to_csv(csvPathList[i], index=False)
-    dataFrame[i] = dataFrame
+    dataFrames[i] = dataFrame
+
+
+
+
+
+now = datetime.now()
+
+# Just get the time part
+current_time = now.strftime("%H:%M:%S")
+
+print("Current Time:", current_time)
