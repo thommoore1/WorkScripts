@@ -24,7 +24,6 @@ def get_day_of_week(date_obj):
 def time_to_seconds(t):
     return t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1_000_000
 
-
 def getSensorLocation(fileName):
     mapping = {
         "11CCD": "HeadDeviceOne",
