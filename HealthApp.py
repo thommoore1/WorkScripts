@@ -25,3 +25,10 @@ majorDF.drop(columns=["/@locale"], inplace=True)
 majorDF.drop(columns=[col for col in majorDF.columns if col.startswith("/Me/")], inplace=True)
 majorDF.drop(columns=[col for col in majorDF.columns if col.startswith("/Workout/")], inplace=True)
 
+# Making DF for activity data
+activityCols = [col for col in majorDF.columns if col.startswith("/ActivitySummary/")]
+activityDF = majorDF[activityCols]
+
+# Making DF for record data
+recordCols = [col for col in majorDF.columns if col.startswith("/Record/")]
+recordDF = majorDF[recordCols]
