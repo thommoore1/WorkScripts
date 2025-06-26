@@ -32,3 +32,13 @@ activityDF = majorDF[activityCols]
 # Making DF for record data
 recordCols = [col for col in majorDF.columns if col.startswith("/Record/")]
 recordDF = majorDF[recordCols]
+
+# Delete empty rows
+activityDF = activityDF.dropna(how='all')
+recordDF = recordDF.dropna(how='all')
+
+# Reset index
+activityDF = activityDF.reset_index(drop=True)
+recordDF = recordDF.reset_index(drop=True)
+
+print(recordDF.head)
