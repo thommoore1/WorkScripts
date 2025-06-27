@@ -3,8 +3,39 @@ import pytz
 import os
 from collections import defaultdict
 
+def convert_date_format(date_str):
+    try:
+        # Parse date, letting pandas infer format
+        dt = pd.to_datetime(date_str, errors='coerce')
+        if pd.isna(dt):
+            return None
+        return dt.strftime("%Y-%m-%d")
+    except Exception:
+        return None
 
 
+def filter_dates_for_participant(df, participant_id, date_column):
+    allowed_dates = participants_dates.get(participant_id, set())
+    converted_dates = df[date_column].astype(str).apply(convert_date_format)
+    filtered_df = df[converted_dates.isin(allowed_dates)].reset_index(drop=True)
+    
+    return filtered_df
+
+
+participants_dates = {
+    "01": {"2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07"},
+    "02": {"2025-02-03", "2025-02-04", "2025-02-05"},
+    "03": {"2025-02-03", "2025-02-04"},
+    "04": {"2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14"},
+    "05": {"2025-02-10", "2025-02-11", "2025-02-12"},
+    "06": {"2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28"},
+    "07": {"2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28"},
+    "08": {"2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28"},
+    "09": {"2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07"},
+    "12": {"2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07"},
+    "14": {"2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-01"},
+    "16": {"2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-01"},
+}
 
 
 
@@ -41,4 +72,19 @@ recordDF = recordDF.dropna(how='all')
 activityDF = activityDF.reset_index(drop=True)
 recordDF = recordDF.reset_index(drop=True)
 
-print(recordDF.head)
+activityDF = filter_dates_for_participant(activityDF, pNum, "/ActivitySummary/@dateComponents")
+recordDF = filter_dates_for_participant(recordDF, pNum, "/Record/@startDate")
+
+#renaming and removing unecessary columns
+activityDF = activityDF.rename(columns={'/ActivitySummary/@activeEnergyBurned': 'ActiveEnergyBurned'})
+activityDF.drop(columns=["/ActivitySummary/@activeEnergyBurnedGoal"], inplace=True)
+activityDF = activityDF.rename(columns={'/ActivitySummary/@activeEnergyBurnedUnit': 'ActiveEnergyBurnedUnit'})
+activityDF = activityDF.rename(columns={'/ActivitySummary/@appleExerciseTime': 'ExerciseTime'})
+activityDF.drop(columns=["/ActivitySummary/@appleExerciseTimeGoal"], inplace=True)
+activityDF.drop(columns=["/ActivitySummary/@appleMoveTime"], inplace=True)
+activityDF.drop(columns=["/ActivitySummary/@appleMoveTimeGoal"], inplace=True)
+activityDF = activityDF.rename(columns={'/ActivitySummary/@appleStandHours': 'StandOurs'})
+activityDF.drop(columns=["/ActivitySummary/@appleStandHoursGoal"], inplace=True)
+activityDF = activityDF.rename(columns={'/ActivitySummary/@dateComponents': 'date'})
+
+activityDF.to_csv(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/P0{pNum}ActivityLabeled.csv", index=False)
