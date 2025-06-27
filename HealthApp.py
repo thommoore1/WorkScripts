@@ -6,7 +6,6 @@ from datetime import datetime, timezone, date
 
 def convert_date_format(date_str):
     try:
-        # Parse date, letting pandas infer format
         dt = pd.to_datetime(date_str, errors='coerce')
         if pd.isna(dt):
             return None
@@ -88,26 +87,27 @@ activityDF = activityDF.rename(columns={'/ActivitySummary/@appleStandHours': 'St
 activityDF.drop(columns=["/ActivitySummary/@appleStandHoursGoal"], inplace=True)
 activityDF = activityDF.rename(columns={'/ActivitySummary/@dateComponents': 'date'})
 
+# Saving activity DF
 activityDF.to_csv(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/P0{pNum}ActivityLabeled.csv", index=False)
 
+# Adding columns to record DF
 zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
 recordDF.insert(0, 'class', "NONE")
 recordDF.insert(1, 'Time_In_PST', zero_time)
 recordDF.insert(2, 'time', 0.0)
 
-zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
-recordDF.insert(0, 'class', "NONE")
-recordDF.insert(1, 'Time_In_PST', zero_time)
-recordDF.insert(2, 'time', 0.0)
-
-prevDate = convert_iso_to_pacific_date(rawData.iloc[0]['timestamp'])
+# Creating list of the different data frames
+recordDF = recordDF.sort_values(by='/Record/@startDate').reset_index(drop=True)
+prevDate = convert_date_format(recordDF.iloc[0]['/Record/@startDate'])
 start_idx = 0
 dfList = []
 
-for idx, row in enumerate(rawData.itertuples()):
-    currDate = convert_iso_to_pacific_date(row.timestamp)
+
+#Separating based on date
+for idx, row in recordDF.iterrows():
+    currDate = convert_date_format(row['/Record/@startDate'])
     if currDate != prevDate:
-        dfList.append(rawData.iloc[start_idx:idx].copy())
+        dfList.append(recordDF.iloc[start_idx:idx].copy())
         start_idx = idx
         prevDate = currDate
-dfList.append(rawData.iloc[start_idx:].copy())
+dfList.append(recordDF.iloc[start_idx:].copy())
