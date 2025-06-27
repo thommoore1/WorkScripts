@@ -111,3 +111,44 @@ for idx, row in recordDF.iterrows():
         start_idx = idx
         prevDate = currDate
 dfList.append(recordDF.iloc[start_idx:].copy())
+
+#adding time columns
+for i, df in enumerate(dfList):
+    dt = pd.to_datetime(df['/Record/@startDate'], errors='coerce')
+    dt = dt.dt.tz_convert('US/Pacific')
+    df['Time_In_PST'] = dt.dt.time
+    df['time'] = dt.dt.floor('s').astype('int64') // 10**9
+    dfList[i] = df
+
+
+for dataFrame in dataFrames:
+    day_of_week = get_day_of_week(datetime.fromtimestamp(dataFrame.iloc[0]['time']))
+    schedule = scheduleDataFri if day_of_week == 'Friday' else scheduleDataOth
+
+    schedule = schedule.copy()
+    schedule['TimeStart'] = pd.to_datetime(schedule['TimeStart'], format="%H:%M:%S").dt.time
+    schedule['TimeEnd']   = pd.to_datetime(schedule['TimeEnd'],   format="%H:%M:%S").dt.time
+
+    schedule['TimeStart_sec'] = schedule['TimeStart'].apply(time_to_seconds)
+    schedule['TimeEnd_sec']   = schedule['TimeEnd'].apply(time_to_seconds)
+
+    time_values_sec = dataFrame['Time_In_PST'].apply(time_to_seconds)
+
+    intervals = pd.IntervalIndex.from_arrays(
+    schedule['TimeStart_sec'],
+    schedule['TimeEnd_sec'],
+    closed='right'
+    )
+
+    import numpy as np
+    matched_class = np.full(len(time_values_sec), None, dtype=object)
+    for i, interval in enumerate(intervals):
+        mask = (interval.left < time_values_sec) & (time_values_sec <= interval.right)
+        matched_class = np.where(mask, schedule.iloc[i]['Class'], matched_class)
+
+    dataFrame['class'] = matched_class
+
+
+
+print(dfList[0][['Time_In_PST', 'time']].head(20))
+print(dfList[0][['Time_In_PST', 'time']].tail(20))
