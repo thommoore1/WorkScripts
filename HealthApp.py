@@ -12,7 +12,12 @@ def convert_date_format(date_str):
         return dt.strftime("%Y-%m-%d")
     except Exception:
         return None
+    
+def time_to_seconds(t):
+    return t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1_000_000
 
+def get_day_of_week(date_obj):
+    return date_obj.strftime("%A")
 
 def filter_dates_for_participant(df, participant_id, date_column):
     allowed_dates = participants_dates.get(participant_id, set())
@@ -42,6 +47,14 @@ participants_dates = {
 
 # Prompt for participant number
 pNum = input("Enter the participant number: ")
+
+# Load schedule data
+if pNum in ["04", "05"]:
+    scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
+    scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_M-Th.csv")
+else:
+    scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
+    scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
 
 # Gathering parent paths
 rawParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Raw/export.csv"
@@ -120,8 +133,7 @@ for i, df in enumerate(dfList):
     df['time'] = dt.dt.floor('s').astype('int64') // 10**9
     dfList[i] = df
 
-
-for dataFrame in dataFrames:
+for dataFrame in dfList:
     day_of_week = get_day_of_week(datetime.fromtimestamp(dataFrame.iloc[0]['time']))
     schedule = scheduleDataFri if day_of_week == 'Friday' else scheduleDataOth
 
@@ -148,7 +160,15 @@ for dataFrame in dataFrames:
 
     dataFrame['class'] = matched_class
 
+csvPathList = []
 
+for df in dfList:
+    date = convert_date_format(df['/Record/@startDate'].iloc[0])
+    csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/P0{pNum}HealthAppRecord{date}")
 
-print(dfList[0][['Time_In_PST', 'time']].head(20))
-print(dfList[0][['Time_In_PST', 'time']].tail(20))
+for i in range(len(dfList)):
+    dataFrame = dfList[i].copy()
+    dataFrame.loc[:, 'class'] = dataFrame['class'].str.strip()
+    dataFrame = dataFrame[dataFrame['class'] != 'DELETE'].reset_index(drop=True)
+    dataFrame.to_csv(csvPathList[i], index=False)
+    dfList[i] = dataFrame
