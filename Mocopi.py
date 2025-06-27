@@ -117,7 +117,7 @@ for rawData in dataFrames:
 import pandas as pd
 for i, df in enumerate(dataFrames):
     dt = pd.to_datetime(df['Timestamp'], format="%Y-%m-%d %H:%M:%S.%f")
-    dt.astype('int64') // 10**9
+    df['time'] = dt.astype('int64') // 10**9
     df['Time_In_PST'] = dt.dt.time
     df.rename(columns={'Timestamp': 'Old Timestamp'}, inplace=True)
     dataFrames[i] = df
