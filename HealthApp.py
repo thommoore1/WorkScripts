@@ -123,15 +123,15 @@ recordDF.insert(1, 'Time_In_PST', zero_time)
 recordDF.insert(2, 'time', 0.0)
 
 # Creating list of the different data frames
-recordDF = recordDF.sort_values(by='/Record/@startDate').reset_index(drop=True)
-prevDate = convert_date_format(recordDF.iloc[0]['/Record/@startDate'])
+recordDF = recordDF.sort_values(by='StartDate').reset_index(drop=True)
+prevDate = convert_date_format(recordDF.iloc[0]['StartDate'])
 start_idx = 0
 dfList = []
 
 
 #Separating based on date
 for idx, row in recordDF.iterrows():
-    currDate = convert_date_format(row['/Record/@startDate'])
+    currDate = convert_date_format(row['StartDate'])
     if currDate != prevDate:
         dfList.append(recordDF.iloc[start_idx:idx].copy())
         start_idx = idx
@@ -140,7 +140,7 @@ dfList.append(recordDF.iloc[start_idx:].copy())
 
 #adding time columns
 for i, df in enumerate(dfList):
-    dt = pd.to_datetime(df['/Record/@startDate'], errors='coerce')
+    dt = pd.to_datetime(df['StartDate'], errors='coerce')
     dt = dt.dt.tz_convert('US/Pacific')
     df['Time_In_PST'] = dt.dt.time
     df['time'] = dt.dt.floor('s').astype('int64') // 10**9
@@ -175,7 +175,7 @@ for dataFrame in dfList:
 
 # Creates date directories
 for df in dfList:
-    date = convert_date_format(df['/Record/@startDate'].iloc[0])
+    date = convert_date_format(df['StartDate'].iloc[0])
     recordDir = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/{date}"
     os.makedirs(recordDir, exist_ok=True)
 
@@ -204,7 +204,7 @@ for df in dfList:
 csvPathList = []
 
 for df in dfList:
-    date = convert_date_format(df['/Record/@startDate'].iloc[0])
+    date = convert_date_format(df['StartDate'].iloc[0])
     type = df['Type'].iloc[0]
     csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/{date}/P0{pNum}HealthAppRecord{date}_{type}.csv")
 
