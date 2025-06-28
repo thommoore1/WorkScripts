@@ -110,7 +110,7 @@ recordDF = recordDF.rename(columns={'/Record/@startDate': 'StartDate'})
 recordDF = recordDF.rename(columns={'/Record/@type': 'Type'})
 recordDF = recordDF.rename(columns={'/Record/@unit': 'Unit'})
 recordDF = recordDF.rename(columns={'/Record/@value': 'Value'})
-recordDF = recordDF.rename(columns={'/Record/#': 'ID'})
+recordDF = recordDF.rename(columns={'/Record/#id': 'ID'})
 recordDF['Type'] = recordDF['Type'].str.replace("HKQuantityTypeIdentifier", '', regex=False)
 
 # Saving activity DF
@@ -181,7 +181,6 @@ for df in dfList:
 
 #Splitting data frames up by data type
 dfListTypes = []
-
 existing = {}
 
 for df in dfList:
@@ -203,14 +202,14 @@ for df in dfList:
 # Creating list of paths to save to
 csvPathList = []
 
-for df in dfList:
+for df in dfListTypes:
     date = convert_date_format(df['StartDate'].iloc[0])
     type = df['Type'].iloc[0]
     csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/{date}/P0{pNum}HealthAppRecord{date}_{type}.csv")
 
-for i in range(len(dfList)):
-    dataFrame = dfList[i].copy()
+for i in range(len(dfListTypes)):
+    dataFrame = dfListTypes[i].copy()
     dataFrame.loc[:, 'class'] = dataFrame['class'].str.strip()
     dataFrame = dataFrame[dataFrame['class'] != 'DELETE'].reset_index(drop=True)
     dataFrame.to_csv(csvPathList[i], index=False)
-    dfList[i] = dataFrame
+    dfListTypes[i] = dataFrame
