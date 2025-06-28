@@ -168,7 +168,7 @@ csvPathList = []
 
 for df in dfList:
     date = convert_date_format(df['/Record/@startDate'].iloc[0])
-    csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/P0{pNum}HealthAppRecord{date}")
+    csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/P0{pNum}HealthAppRecord{date}.csv")
 
 for i in range(len(dfList)):
     dataFrame = dfList[i].copy()
