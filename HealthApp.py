@@ -42,9 +42,6 @@ participants_dates = {
     "16": {"2025-03-25", "2025-03-26", "2025-03-27", "2025-03-31", "2025-04-01"},
 }
 
-
-
-
 # Prompt for participant number
 pNum = input("Enter the participant number: ")
 
@@ -114,6 +111,7 @@ recordDF = recordDF.rename(columns={'/Record/@type': 'Type'})
 recordDF = recordDF.rename(columns={'/Record/@unit': 'Unit'})
 recordDF = recordDF.rename(columns={'/Record/@value': 'Value'})
 recordDF = recordDF.rename(columns={'/Record/#': 'ID'})
+recordDF['Type'] = recordDF['Type'].str.replace("HKQuantityTypeIdentifier", '', regex=False)
 
 # Saving activity DF
 activityDF.to_csv(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/P0{pNum}ActivityLabeled.csv", index=False)
@@ -175,11 +173,40 @@ for dataFrame in dfList:
 
     dataFrame['class'] = matched_class
 
+# Creates date directories
+for df in dfList:
+    date = convert_date_format(df['/Record/@startDate'].iloc[0])
+    recordDir = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/{date}"
+    os.makedirs(recordDir, exist_ok=True)
+
+#Splitting data frames up by data type
+dfListTypes = []
+
+existing = {}
+
+for df in dfList:
+    date = convert_date_format(df['StartDate'].iloc[0])
+    
+    for idx, row in df.iterrows():
+        t = row['Type']
+        key = (date, t)
+        
+        if key not in existing:
+            # Create a new DataFrame with this row
+            new_df = pd.DataFrame([row])
+            dfListTypes.append(new_df)
+            existing[key] = new_df
+        else:
+            # Append row to existing DataFrame for this (date, type)
+            existing[key] = pd.concat([existing[key], pd.DataFrame([row])], ignore_index=True)
+
+# Creating list of paths to save to
 csvPathList = []
 
 for df in dfList:
     date = convert_date_format(df['/Record/@startDate'].iloc[0])
-    csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/P0{pNum}HealthAppRecord{date}.csv")
+    type = df['Type'].iloc[0]
+    csvPathList.append(f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record/{date}/P0{pNum}HealthAppRecord{date}_{type}.csv")
 
 for i in range(len(dfList)):
     dataFrame = dfList[i].copy()
