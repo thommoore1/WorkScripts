@@ -61,6 +61,10 @@ rawParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/R
 labeledActivityParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/ActivitySummary"
 labeledRecordParentPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/ActivitySummary"
 
+# Ensure the Record directory exists
+recordDir = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/HealthApp/Labeled/Record"
+os.makedirs(recordDir, exist_ok=True)
+
 # Make dataframe of entire csv (will split later)
 majorDF = pd.read_csv(rawParentPath, low_memory=False)
 
