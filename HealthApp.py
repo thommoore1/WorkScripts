@@ -183,21 +183,20 @@ for df in dfList:
 dfListTypes = []
 existing = {}
 
+
 for df in dfList:
     date = convert_date_format(df['StartDate'].iloc[0])
-    
     for idx, row in df.iterrows():
         t = row['Type']
         key = (date, t)
-        
+
         if key not in existing:
-            # Create a new DataFrame with this row
-            new_df = pd.DataFrame([row])
-            dfListTypes.append(new_df)
-            existing[key] = new_df
+            existing[key] = pd.DataFrame([row])
         else:
-            # Append row to existing DataFrame for this (date, type)
             existing[key] = pd.concat([existing[key], pd.DataFrame([row])], ignore_index=True)
+
+# Now store the final DataFrames
+dfListTypes = list(existing.values())
 
 # Creating list of paths to save to
 csvPathList = []
