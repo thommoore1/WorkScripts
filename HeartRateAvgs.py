@@ -17,18 +17,17 @@ participants = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 
 
 heartRateAverages = pd.DataFrame({
     'participant': participants,
-    'Monday avg': 0,
-    'Tuesday avg': 0,
-    'Wednesday avg': 0,
-    'Thursday avg': 0,
-    'Friday avg': 0,
-    'Total avg': 0,
+    'Monday avg': 0.0,
+    'Tuesday avg': 0.0,
+    'Wednesday avg': 0.0,
+    'Thursday avg': 0.0,
+    'Friday avg': 0.0,
+    'Total avg': 0.0,
 })
-
-allBPM = []
 
 for idx, participant in enumerate(participants):
     dataPath = rootPath + participant + ouraRingPath
+    allBPM = []
 
     for file in os.listdir(dataPath):
         filePath = os.path.join(dataPath, file)
