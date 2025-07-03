@@ -57,18 +57,21 @@ heatmap_data = counts.pivot_table(index=activity_column, columns='participant', 
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
 sns.heatmap(
     heatmap_data,
-    cmap='Blues',
+    cmap='viridis',  # higher contrast colormap
     linewidths=0.5,
     linecolor='gray',
-    cbar=True
+    cbar=True,
+    square=False,
+    annot=False
 )
 
-plt.title('Participant Activity Heatmap (Rows per Activity)')
-plt.xlabel('Participant')
-plt.ylabel('Activity')
+plt.title('Oura Ring Heart Rate heatmap', color='black', fontsize=14)
+plt.xlabel('Participant', color='black')
+plt.ylabel('Activity', color='black')
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
+plt.gcf().set_facecolor('white')  # set figure background white
 plt.tight_layout()
 plt.savefig(output_path)
-print(f"✅ Saved activity heatmap to: {output_path}")
+print(f"Saved activity heatmap to: {output_path}")
