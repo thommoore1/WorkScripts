@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
@@ -54,6 +55,13 @@ avg_hr = combined_df.groupby(['participant', activity_column])[heart_rate_column
 # Pivot: rows = activity, columns = participant
 heatmap_data = avg_hr.pivot_table(index=activity_column, columns='participant', values='avg_heart_rate', fill_value=0)
 
+# Replace zeros with NaN
+heatmap_data.replace(0, np.nan, inplace=True)
+
+# Create annotation DataFrame with "Null" for NaN
+annot_data = heatmap_data.copy()
+annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{x:.1f}")
+
 # Plot
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
 sns.heatmap(
@@ -63,8 +71,8 @@ sns.heatmap(
     linecolor='gray',
     cbar=True,
     square=False,
-    annot=True,  # Shows values on heatmap
-    fmt=".1f"
+    annot=annot_data,
+    fmt=""  # VERY IMPORTANT: disables auto-formatting
 )
 
 plt.title('Average Heart Rate per Activity per Participant', color='black', fontsize=14)
