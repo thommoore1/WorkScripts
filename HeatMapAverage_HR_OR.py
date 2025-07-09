@@ -58,6 +58,11 @@ heatmap_data = avg_hr.pivot_table(index=activity_column, columns='participant', 
 # Replace zeros with NaN
 heatmap_data.replace(0, np.nan, inplace=True)
 
+# Sort rows by count of non-NaN values (descending)
+heatmap_data['non_nan_count'] = heatmap_data.notna().sum(axis=1)
+heatmap_data = heatmap_data.sort_values(by='non_nan_count', ascending=False)
+heatmap_data = heatmap_data.drop(columns='non_nan_count')
+
 # Create annotation DataFrame with "Null" for NaN
 annot_data = heatmap_data.copy()
 annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{x:.1f}")
@@ -66,13 +71,13 @@ annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{x:.1f}")
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
 sns.heatmap(
     heatmap_data,
-    cmap='viridis',
+    cmap='viridis_r',
     linewidths=0.5,
     linecolor='gray',
     cbar=True,
     square=False,
     annot=annot_data,
-    fmt=""  # VERY IMPORTANT: disables auto-formatting
+    fmt=""
 )
 
 plt.title('Average Heart Rate per Activity per Participant', color='black', fontsize=14)
