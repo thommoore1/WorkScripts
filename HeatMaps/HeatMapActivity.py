@@ -1,12 +1,14 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "Heatmaps")
 timestamp_column = "time"
 activity_column = "class"
+heart_rate_column = "bpm"
 output_filename = "participant_activity_heatmap.png"
 
 os.makedirs(output_folder, exist_ok=True)
@@ -34,7 +36,7 @@ for participant in participant_folders:
     for file in csv_files:
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
-        if timestamp_column not in df.columns or activity_column not in df.columns:
+        if timestamp_column not in df.columns or activity_column not in df.columns or heart_rate_column not in df.columns:
             continue
 
         df['participant'] = participant_number
@@ -47,31 +49,46 @@ if not all_data:
 
 combined_df = pd.concat(all_data, ignore_index=True)
 
-# Count rows per activity per participant
+# Count number of data points per activity per participant
 counts = combined_df.groupby(['participant', activity_column]).size().reset_index(name='count')
 
 # Pivot: rows = activity, columns = participant
 heatmap_data = counts.pivot_table(index=activity_column, columns='participant', values='count', fill_value=0)
 
+# Replace zeros with NaN if you want to show them as empty
+heatmap_data.replace(0, np.nan, inplace=True)
+
+# Sort rows by count of non-NaN values (descending)
+heatmap_data['non_nan_count'] = heatmap_data.notna().sum(axis=1)
+heatmap_data = heatmap_data.sort_values(by='non_nan_count', ascending=False)
+heatmap_data = heatmap_data.drop(columns='non_nan_count')
+
+# Create annotation DataFrame with "Null" for NaN
+annot_data = heatmap_data.copy()
+annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{int(x)}")
+
 # Plot
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
 sns.heatmap(
     heatmap_data,
-    cmap='viridis',  # higher contrast colormap
+    cmap='viridis_r',
     linewidths=0.5,
     linecolor='gray',
     cbar=True,
     square=False,
-    annot=False
+    annot=annot_data,
+    fmt="",
+    vmin=heatmap_data.min().min(),
+    vmax=650
 )
 
-plt.title('Oura Ring Heart Rate heatmap', color='black', fontsize=14)
+plt.title('Number of Data Points per Activity per Participant', color='black', fontsize=14)
 plt.xlabel('Participant', color='black')
 plt.ylabel('Activity', color='black')
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
-plt.gcf().set_facecolor('white')  # set figure background white
+plt.gcf().set_facecolor('white')
 plt.tight_layout()
 plt.savefig(output_path)
 print(f"Saved activity heatmap to: {output_path}")

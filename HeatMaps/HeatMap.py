@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 
 from datetime import datetime
@@ -58,24 +59,43 @@ counts = combined_df.groupby(['date', 'participant']).size().reset_index(name='c
 counts['date'] = pd.to_datetime(counts['date'])
 counts['weekday'] = counts['date'].dt.weekday  # Monday = 0
 
+# ✅ Filter for Monday (0) to Friday (4) only
+counts = counts[counts['weekday'].isin([0, 1, 2, 3, 4])]
+
 # Pivot: rows = weekday, columns = participant, values = sum of rows per weekday
 heatmap_data = counts.groupby(['participant', 'weekday'])['count'].sum().reset_index()
 heatmap_data = heatmap_data.pivot_table(index='weekday', columns='participant', values='count', fill_value=0)
 
+# Replace zeros with NaN for white background
+heatmap_data_masked = heatmap_data.replace(0, np.nan)
+
+# Create annotation data: no text for NaN cells
+annot_data = heatmap_data_masked.copy()
+annot_data = annot_data.applymap(lambda x: "" if pd.isna(x) else int(x))
+
 # Plot
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, 4))
-sns.heatmap(
-    heatmap_data,
-    cmap='Greens',
+ax = sns.heatmap(
+    heatmap_data_masked,
+    cmap='viridis_r',
     linewidths=0.5,
     linecolor='gray',
-    cbar=True
+    cbar=True,
+    square=False,
+    annot=annot_data,
+    fmt="",
+    annot_kws={"size": 8, "color": "black"},
+    mask=heatmap_data_masked.isna(),  # mask NaN cells to make them white
 )
 
-# Format y-axis
+# Fix missing grid lines on edges
+ax.set_xlim(-0.5, len(heatmap_data_masked.columns) + 0.5)
+ax.set_ylim(len(heatmap_data_masked.index) + 0.5, -0.5)
+
+# Format y-axis: only Monday–Friday
 plt.yticks(
-    ticks=[0.5 + i for i in range(7)],
-    labels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    ticks=[0.5 + i for i in range(5)],
+    labels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     rotation=0
 )
 
