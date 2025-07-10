@@ -85,7 +85,9 @@ ax = sns.heatmap(
     annot=annot_data,
     fmt="",
     annot_kws={"size": 8, "color": "black"},
-    mask=heatmap_data_masked.isna(),  # mask NaN cells to make them white
+    mask=heatmap_data_masked.isna(),
+    vmin=heatmap_data.min().min(),
+    vmax=850
 )
 
 # Fix missing grid lines on edges
