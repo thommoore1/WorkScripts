@@ -84,7 +84,7 @@ annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{int(x)}"
 
 # Plot
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
-sns.heatmap(
+ax = sns.heatmap(
     heatmap_data,
     cmap='viridis_r',
     linewidths=0.5,
@@ -100,6 +100,9 @@ sns.heatmap(
 plt.title('Number of Data Points per Activity per Participant', color='black', fontsize=14)
 plt.xlabel('Participant', color='black')
 plt.ylabel('Activity', color='black')
+ax.set_ylim(len(heatmap_data.index) + 0.5, -0.5)
+ax.set_xlim(-0.5, len(heatmap_data.columns) + 0.5)
+
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
