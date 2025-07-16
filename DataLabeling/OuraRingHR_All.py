@@ -40,12 +40,14 @@ for pNum in participant_numbers:
 
     rawData = pd.read_csv(rawDataPath)
 
-    if pNum in ["04", "05"]:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_Fr.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05)_M-Th.csv")
+    if pNum in ["04", "05", "09", "14", "16"]:
+        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
+        if pNum in ['14', '16']:
+            scheduleDataTu = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
     else:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_FR.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,09,12,14,16)_M-TH.csv")
+        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
 
     zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
     rawData.insert(0, 'class', "NONE")
@@ -83,6 +85,8 @@ for pNum in participant_numbers:
         DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
         if DayOfWeek == 'Friday':
             scheduleData = scheduleDataFri
+        elif DayOfWeek == 'Tuesday' and (pNum == "14" or pNum == "16"):
+            scheduleData = scheduleDataTu
         else:
             scheduleData = scheduleDataOth
 
