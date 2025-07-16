@@ -119,4 +119,4 @@ output_file = os.path.join(output_folder, "Participant_HeartRate_DataPoint_Heatm
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 
-print(f"Heatmap saved to: {output_file}")
+print(f" Heatmap saved to: {output_file}")

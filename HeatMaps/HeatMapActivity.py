@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from datetime import datetime
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "Heatmaps")
@@ -34,8 +35,22 @@ for participant in participant_folders:
     ]
 
     for file in csv_files:
+        # Extract the date string from the filename
+        date_str = file[-14:-4]  # Assumes format: YYYY-MM-DD.csv
+
+        try:
+            file_date = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            # If the date can't be parsed, skip the file
+            continue
+
+        # Check if the date is a Friday (weekday() == 4 means Friday)
+        if file_date.weekday() == 4:
+            continue
+
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
+
         if timestamp_column not in df.columns or activity_column not in df.columns or heart_rate_column not in df.columns:
             continue
 
