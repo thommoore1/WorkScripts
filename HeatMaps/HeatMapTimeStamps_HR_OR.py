@@ -5,24 +5,24 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import numpy as np
 
-# === Paths ===
+# Paths
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "Heatmaps")
 os.makedirs(output_folder, exist_ok=True)
 
-# === Find participant folders ===
+# Find participant folders
 participant_folders = [
     f for f in os.listdir(root_path)
     if os.path.isdir(os.path.join(root_path, f)) and f.startswith('P')
 ]
 
-# === Sort numerically ===
+# Sort numerically
 def get_participant_number(name):
     return int(name[1:])  # assumes format "P###"
 
 participant_folders = sorted(participant_folders, key=get_participant_number)
 
-# === Define 30-min time bins from 08:30 to 15:00 ===
+# Define 30-min time bins from 08:30 to 15:00
 start_time = datetime.strptime("08:30", "%H:%M")
 end_time = datetime.strptime("15:00", "%H:%M")
 time_bins = []
@@ -31,21 +31,21 @@ while start_time < end_time:
     time_bins.append((start_time.time(), bin_end.time()))
     start_time = bin_end
 
-# === Initialize heatmap dataframe ===
+# Initialize heatmap dataframe 
 heatmap_data = pd.DataFrame(
     0,
     index=[f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}" for start, end in time_bins],
     columns=participant_folders
 )
 
-# === Safe time parser ===
+# Safe time parser 
 def parse_time(s):
     try:
         return datetime.strptime(s, "%H:%M:%S.%f").time()
     except ValueError:
         return datetime.strptime(s, "%H:%M:%S").time()
 
-# === Process each participant ===
+# Process each participant 
 for participant in participant_folders:
     hr_path = os.path.join(root_path, participant, "OuraRing", "HeartRate")
     if not os.path.exists(hr_path):
@@ -79,24 +79,23 @@ for participant in participant_folders:
                 interval = f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}"
                 heatmap_data.loc[interval, participant] += count
 
-# === Ensure final column order is numeric ===
+# Ensure final column order is numeric
 heatmap_data = heatmap_data[participant_folders]
 
-# === Force 12:00–12:30 bin for P14 and P16 to zero ===
+# Force 12:00–12:30 bin for P14 and P16 to zero
 interval_to_zero = "12:00-12:30"
 for p in ["P014", "P016"]:
     if p in heatmap_data.columns and interval_to_zero in heatmap_data.index:
         heatmap_data.loc[interval_to_zero, p] = 0
 
-# === Create mask: True for zeros ===
+# Create mask: True for zeros
 mask = heatmap_data == 0
 
-
-# === Only show annotations for non-zero cells ===
+# Only show annotations for non-zero cells
 annot_data = heatmap_data.copy().astype(str)
 annot_data[mask] = ""
 
-# === Plot heatmap ===
+# Plot heatmap
 plt.figure(figsize=(14, 8))
 sns.heatmap(
     heatmap_data,
@@ -115,9 +114,9 @@ plt.title("OuraRing Heart Rate Data Points\nby 30-Min Time Interval and Particip
 plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 
-# === Save output ===
+# Save output
 output_file = os.path.join(output_folder, "Participant_HeartRate_DataPoint_Heatmap.png")
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 
-print(f"✅ Heatmap saved to: {output_file}")
+print(f"Heatmap saved to: {output_file}")
