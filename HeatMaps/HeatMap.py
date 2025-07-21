@@ -35,6 +35,22 @@ for participant in participant_folders:
     ]
 
     for file in csv_files:
+        # Extract the date string from the filename
+        date_str = file[-14:-4]  # Assumes format: YYYY-MM-DD.csv
+
+        try:
+            file_date = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            # If the date can't be parsed, skip the file
+            continue
+
+        # Check if the date is a Friday (weekday() == 4 means Friday)
+        if file_date.weekday() == 4:
+            continue
+
+        file_path = os.path.join(heart_rate_folder, file)
+        df = pd.read_csv(file_path)
+
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
         if timestamp_column not in df.columns:
@@ -60,7 +76,7 @@ counts['date'] = pd.to_datetime(counts['date'])
 counts['weekday'] = counts['date'].dt.weekday  # Monday = 0
 
 # ✅ Filter for Monday (0) to Friday (4) only
-counts = counts[counts['weekday'].isin([0, 1, 2, 3, 4])]
+counts = counts[counts['weekday'].isin([0, 1, 2, 3])]
 
 # Pivot: rows = weekday, columns = participant, values = sum of rows per weekday
 heatmap_data = counts.groupby(['participant', 'weekday'])['count'].sum().reset_index()
@@ -96,8 +112,8 @@ ax.set_ylim(len(heatmap_data_masked.index) + 0.5, -0.5)
 
 # Format y-axis: only Monday–Friday
 plt.yticks(
-    ticks=[0.5 + i for i in range(5)],
-    labels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    ticks=[0.5 + i for i in range(4)],
+    labels=['Mon', 'Tue', 'Wed', 'Thu'],
     rotation=0
 )
 
