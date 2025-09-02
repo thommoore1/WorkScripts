@@ -9,7 +9,6 @@ rootPath = "/Users/tommoore/Documents/GitHub/Research"
 outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/All")
 timestampColumn = "time"
 activityColumn = "class"
-heartRateColumn = "seconds_elapsed"
 outputFilename = "SensLogActivityHeatMapAll.png"
 
 os.makedirs(outputFolder, exist_ok=True)
@@ -23,7 +22,7 @@ participant_folders = [
 all_data = []
 
 for participant in participant_folders:
-    participant_number = participant
+    participantNumber = participant
 
     sensorLoggerFolder = os.path.join(rootPath, participant, "SensorLogger")
 
@@ -38,7 +37,6 @@ for participant in participant_folders:
         dateStr = file[-14:-4]
         normalized = dateStr.replace("_", "-")
         
-
         try:
             fileDate = datetime.strptime(normalized, "%Y-%m-%d")
         except ValueError:
@@ -49,11 +47,11 @@ for participant in participant_folders:
         if fileDate.weekday() == 4:
             continue
 
-        filePath = os.path.join(heart_rate_folder, file)
+        filePath = os.path.join(sensorLoggerFolder, file)
         df = pd.read_csv(filePath)
 
-        df['participant'] = participant_number
-        all_data.append(df[[activity_column, 'participant']])
+        df['participant'] = participantNumber
+        all_data.append(df[[activityColumn, 'participant']])
 
 # Combine all data
 if not all_data:
@@ -63,10 +61,10 @@ if not all_data:
 combined_df = pd.concat(all_data, ignore_index=True)
 
 # Count number of data points per activity per participant
-counts = combined_df.groupby(['participant', activity_column]).size().reset_index(name='count')
+counts = combined_df.groupby(['participant', activityColumn]).size().reset_index(name='count')
 
 # Pivot: rows = activity, columns = participant
-heatmap_data = counts.pivot_table(index=activity_column, columns='participant', values='count', fill_value=0)
+heatmap_data = counts.pivot_table(index=activityColumn, columns='participant', values='count', fill_value=0)
 
 # Replace zeros with NaN if you want to show them as empty
 heatmap_data.replace(0, np.nan, inplace=True)
@@ -81,7 +79,7 @@ annot_data = heatmap_data.copy()
 annot_data = annot_data.applymap(lambda x: "Null" if pd.isna(x) else f"{int(x)}")
 
 # Plot
-plt.figure(figsize=(len(heatmap_data.columns) * 0.8, len(heatmap_data.index) * 0.5))
+plt.figure(figsize=(len(heatmap_data.columns) * 1.1, len(heatmap_data.index) * .7))
 ax = sns.heatmap(
     heatmap_data,
     cmap='viridis_r',
@@ -103,8 +101,8 @@ ax.set_xlim(-0.5, len(heatmap_data.columns) + 0.5)
 
 
 # Save image
-output_path = os.path.join(output_folder, output_filename)
+outputPath = os.path.join(outputFolder, outputFilename)
 plt.gcf().set_facecolor('white')
 plt.tight_layout()
-plt.savefig(output_path)
-print(f"Saved activity heatmap to: {output_path}")
+plt.savefig(outputPath)
+print(f"Saved activity heatmap to: {outputPath}")
