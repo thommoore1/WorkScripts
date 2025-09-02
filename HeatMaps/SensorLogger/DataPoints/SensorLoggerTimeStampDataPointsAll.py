@@ -115,8 +115,8 @@ sns.heatmap(
     annot=annot_data,
     fmt='s',
     mask=mask,
-    vmin=0,
-    vmax=400,
+    vmin=20,
+    vmax=1000,
     cbar_kws={'label': 'Number of Data Points'}
 )
 
