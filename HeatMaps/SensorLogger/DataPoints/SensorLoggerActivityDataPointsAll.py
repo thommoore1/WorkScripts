@@ -23,7 +23,6 @@ all_data = []
 
 for participant in participant_folders:
     participantNumber = participant
-
     sensorLoggerFolder = os.path.join(rootPath, participant, "SensorLogger")
 
     csv_files = []
