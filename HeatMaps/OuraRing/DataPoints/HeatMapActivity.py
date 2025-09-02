@@ -26,8 +26,8 @@ for participant in participant_folders:
     participant_number = participant
 
     heart_rate_folder = os.path.join(root_path, participant, "OuraRing", "HeartRate")
-    if not os.path.exists(heart_rate_folder):
-        continue
+    #if not os.path.exists(heart_rate_folder):
+    #    continue
 
     csv_files = [
         f for f in os.listdir(heart_rate_folder)
