@@ -51,9 +51,6 @@ for participant in participant_folders:
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
 
-        if timestamp_column not in df.columns or activity_column not in df.columns or heart_rate_column not in df.columns:
-            continue
-
         df['participant'] = participant_number
         all_data.append(df[[activity_column, 'participant']])
 
