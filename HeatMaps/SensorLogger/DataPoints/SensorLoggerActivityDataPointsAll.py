@@ -89,7 +89,7 @@ ax = sns.heatmap(
     annot=annot_data,
     fmt="",
     vmin=heatmap_data.min().min(),
-    vmax=650
+    vmax=650,
 )
 
 plt.title('Number of Data Points per Activity per Participant', color='black', fontsize=14)
