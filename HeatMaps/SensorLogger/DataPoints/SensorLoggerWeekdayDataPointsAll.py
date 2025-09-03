@@ -6,59 +6,65 @@ import os
 
 from datetime import datetime
 
-root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "Heatmaps/SensorLoger/All")
-timestamp_column = "time"
-output_filename = "SensorLogger_Weekday_DataPoints_All.png"
+rootPath = "/Users/tommoore/Documents/GitHub/Research"
+outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/All")
+timestampColumn = "time"
+outputFilename = "SensorLogger_Weekday_DataPoints_All.png"
 
 # Create Heatmaps folder if it doesn't exist
-os.makedirs(output_folder, exist_ok=True)
+os.makedirs(outputFolder, exist_ok=True)
 
 # Get all participant folders
-participant_folders = [
-    f for f in os.listdir(root_path)
-    if f.startswith("P") and os.path.isdir(os.path.join(root_path, f))
+participantFolders = [
+    f for f in os.listdir(rootPath)
+    if f.startswith("P") and os.path.isdir(os.path.join(rootPath, f))
 ]
 
 all_data = []
 
-for participant in participant_folders:
-    participant_number = participant
+for participant in participantFolders:
+    participantNumber = participant
 
-    heart_rate_folder = os.path.join(root_path, participant, "OuraRing", "HeartRate")
-    if not os.path.exists(heart_rate_folder):
+    sensorLoggerFolder = os.path.join(rootPath, participant, "SensorLogger")
+    if not os.path.exists(sensorLoggerFolder):
         continue
 
-    csv_files = [
-        f for f in os.listdir(heart_rate_folder)
-        if f.endswith(".csv") and "RAW" not in f
-    ]
+    csv_files = []
+    for root, dirs, files in os.walk(sensorLoggerFolder):
+        for f in files:
+            if f.endswith(".csv") and "TRUE" in f:
+                csv_files.append(os.path.join(root, f))
 
     for file in csv_files:
         # Extract the date string from the filename
         date_str = file[-14:-4]  # Assumes format: YYYY-MM-DD.csv
 
-        try:
-            file_date = datetime.strptime(date_str, "%Y-%m-%d")
-        except ValueError:
-            # If the date can't be parsed, skip the file
-            continue
+        # Skip if RAW in filename or if date is Friday
+        if file.endswith(".csv") and "TRUE" in file:
+            try:
+                # Extract date substring before .csv (last 14 chars before '.csv' expected as YYYY-MM-DD)
+                dateStr = file[-14:-4]
+                normalized = dateStr.replace("_", "-")
+                fileDate = datetime.strptime(normalized, "%Y-%m-%d").date()
+            except Exception:
+                # If date parsing fails, skip this file
+                continue
 
         # Check if the date is a Friday (weekday() == 4 means Friday)
-        if file_date.weekday() == 4:
+        if fileDate.weekday() == 4:
             continue
 
-        file_path = os.path.join(heart_rate_folder, file)
+        file_path = os.path.join(sensorLoggerFolder, file)
         df = pd.read_csv(file_path)
 
-        file_path = os.path.join(heart_rate_folder, file)
+        file_path = os.path.join(sensorLoggerFolder, file)
         df = pd.read_csv(file_path)
-        if timestamp_column not in df.columns:
+        if timestampColumn not in df.columns:
             continue
 
         # Convert UNIX time to date
-        df['date'] = pd.to_datetime(df[timestamp_column], unit='s').dt.date
-        df['participant'] = participant_number
+        df['date'] = pd.to_datetime(df[timestampColumn], unit='ns').dt.date
+        df['participant'] = participantNumber
         all_data.append(df[['date', 'participant']])
 
 # Combine all data
@@ -100,7 +106,7 @@ ax = sns.heatmap(
     square=False,
     annot=annot_data,
     fmt="",
-    annot_kws={"size": 8, "color": "black"},
+    #annot_kws={"size": 8, "color": "black"},
     mask=heatmap_data_masked.isna(),
     vmin=heatmap_data.min().min(),
     vmax=850
@@ -122,7 +128,7 @@ plt.xlabel('Participant')
 plt.ylabel('')
 
 # Save image to the Heatmaps folder
-output_path = os.path.join(output_folder, output_filename)
+outputPath = os.path.join(outputFolder, outputFilename)
 plt.tight_layout()
-plt.savefig(output_path)
-print(f"Saved heatmap to: {output_path}")
+plt.savefig(outputPath)
+print(f"Saved heatmap to: {outputPath}")
