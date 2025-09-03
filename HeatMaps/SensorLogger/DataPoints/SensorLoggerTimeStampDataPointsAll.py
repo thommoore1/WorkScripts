@@ -98,12 +98,22 @@ for p in ["P014", "P016"]:
     if p in heatmap_data.columns and interval_to_zero in heatmap_data.index:
         heatmap_data.loc[interval_to_zero, p] = 0
 
+# Replace zeros with NaN if you want to show them as empty
+heatmap_data.replace(0, np.nan, inplace=True)
+
+# Sort rows by count of non-NaN values (descending)
+heatmap_data['non_nan_count'] = heatmap_data.notna().sum(axis=1)
+heatmap_data = heatmap_data.sort_values(by='non_nan_count', ascending=False)
+heatmap_data = heatmap_data.drop(columns='non_nan_count')
+
 # Create mask: True for zeros
 mask = heatmap_data == 0
 
 # Only show annotations for non-zero cells
-annot_data = heatmap_data.copy().astype(str)
-annot_data[mask] = ""
+annot_data = heatmap_data.copy()
+annot_data = annot_data.applymap(
+    lambda x: "Null" if pd.isna(x) else ("" if x == 0 else f"{int(x)}")
+)
 
 # Plot heatmap
 plt.figure(figsize=(14, 8))
@@ -113,8 +123,7 @@ sns.heatmap(
     linewidths=0.5,
     linecolor='gray',
     annot=annot_data,
-    fmt='s',
-    mask=mask,
+    fmt="",
     vmin=20,
     vmax=1000,
     cbar_kws={'label': 'Number of Data Points'}
@@ -125,7 +134,7 @@ plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 
 # Save output
-output_file = os.path.join(outputFolder, "Participant_HeartRate_DataPoint_Heatmap.png")
+output_file = os.path.join(outputFolder, "SensorLogger_TimeStamp_DataPoints_All.png")
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 
