@@ -110,7 +110,7 @@ ax = sns.heatmap(
     #annot_kws={"size": 8, "color": "black"},
     mask=heatmap_data_masked.isna(),
     vmin=heatmap_data.min().min(),
-    vmax=850
+    vmax=180
 )
 
 # Fix missing grid lines on edges

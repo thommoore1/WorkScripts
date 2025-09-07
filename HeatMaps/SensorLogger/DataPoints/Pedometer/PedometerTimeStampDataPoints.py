@@ -125,8 +125,8 @@ sns.heatmap(
     linecolor='gray',
     annot=annot_data,
     fmt="",
-    vmin=20,
-    vmax=1000,
+    vmin=0,
+    vmax=175,
     cbar_kws={'label': 'Number of Data Points'}
 )
 
