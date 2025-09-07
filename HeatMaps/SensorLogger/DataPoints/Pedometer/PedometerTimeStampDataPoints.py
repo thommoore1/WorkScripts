@@ -7,7 +7,8 @@ import numpy as np
 
 # Paths
 rootPath = "/Users/tommoore/Documents/GitHub/Research"
-outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/All")
+outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/Pedometer")
+output_file = os.path.join(outputFolder, "PedometerTimeStampDataPoints.png")
 os.makedirs(outputFolder, exist_ok=True)
 
 # Find participant folders
@@ -54,7 +55,7 @@ for participant in participant_folders:
     csv_files = []
     for root, dirs, files in os.walk(sensorLoggerFolder):
         for f in files:
-            if f.endswith(".csv") and "TRUE" in f:
+            if f.endswith(".csv") and "TRUE" in f and "Pedometer" in f:
                 csv_files.append(os.path.join(root, f))
     for file in csv_files:
         # Skip if RAW in filename or if date is Friday
@@ -134,7 +135,6 @@ plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 
 # Save output
-output_file = os.path.join(outputFolder, "SensorLogger_TimeStamp_DataPoints_All.png")
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 
