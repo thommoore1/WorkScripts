@@ -33,7 +33,7 @@ for participant in participantFolders:
     csv_files = []
     for root, dirs, files in os.walk(sensorLoggerFolder):
         for f in files:
-            if f.endswith(".csv") and "TRUE" in f and "Pedometer":
+            if f.endswith(".csv") and "TRUE" in f and "Pedometer" in f:
                 csv_files.append(os.path.join(root, f))
 
     for file in csv_files:
