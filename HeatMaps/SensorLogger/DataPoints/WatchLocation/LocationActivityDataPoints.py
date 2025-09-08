@@ -6,10 +6,10 @@ import os
 from datetime import datetime
 
 rootPath = "/Users/tommoore/Documents/GitHub/Research"
-outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/WristMotion")
+outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/WatchLocation")
 timestampColumn = "time"
 activityColumn = "class"
-outputFilename = "WristMotionActivityDataPointsHeatMap.png"
+outputFilename = "WatchLocationActivityDataPointsHeatMap.png"
 
 os.makedirs(outputFolder, exist_ok=True)
 
@@ -88,8 +88,8 @@ ax = sns.heatmap(
     square=False,
     annot=annot_data,
     fmt="",
-    vmin=600,
-    vmax=1200,
+    vmin=5,
+    vmax=1250,
 )
 
 plt.title('Number of Data Points per Activity per Participant', color='black', fontsize=14)

@@ -6,10 +6,10 @@ import os
 from datetime import datetime
 
 rootPath = "/Users/tommoore/Documents/GitHub/Research"
-outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/WatchLocation")
+outputFolder = os.path.join(rootPath, "Heatmaps/SensorLogger/WristMotion")
 timestampColumn = "time"
 activityColumn = "class"
-outputFilename = "WatchLocationActivityDataPointsHeatMap.png"
+outputFilename = "WristMotionActivityDataPointsHeatMap.png"
 
 os.makedirs(outputFolder, exist_ok=True)
 
