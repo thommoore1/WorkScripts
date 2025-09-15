@@ -63,21 +63,20 @@ counts = combined_df.groupby(['participant', activity_column]).size().reset_inde
 plt.figure(figsize=(12, 6))
 ax = sns.barplot(
     data=counts,
-    x="participant",
+    x=activity_column,     # Activities on the x-axis
     y="count",
-    hue=activity_column,
-    estimator=sum,     # Sum counts within each group
+    hue="participant",     # Each participant gets a separate bar
+    estimator=sum,         # Sum counts within each group
     dodge=True
 )
 
-plt.title("Number of Data Points per Participant per Activity", fontsize=14)
-plt.xlabel("Participant")
+plt.title("Number of Data Points per Activity per Participant", fontsize=14)
+plt.xlabel("Activity")
 plt.ylabel("Number of Data Points")
 plt.xticks(rotation=45)
-plt.legend(title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
+plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
-plt.ylim(0, 600)  # focus on the range of interest
-
+#plt.ylim(0, 600)  # focus on the range of interest
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
