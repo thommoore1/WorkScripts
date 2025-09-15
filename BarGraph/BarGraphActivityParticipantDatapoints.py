@@ -76,6 +76,9 @@ plt.ylabel("Number of Data Points")
 plt.xticks(rotation=45)
 plt.legend(title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
 
+plt.ylim(0, 600)  # focus on the range of interest
+
+
 # Save image
 output_path = os.path.join(output_folder, output_filename)
 plt.gcf().set_facecolor('white')
