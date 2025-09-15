@@ -46,6 +46,8 @@ for participant in participant_folders:
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
 
+        df['class'] = df['class'].replace('Homework Reinforcement/Study Hall', 'HW Reinfor')
+
         df['participant'] = participant_number
         all_data.append(df[[activity_column, 'participant']])
 
@@ -62,9 +64,9 @@ counts = combined_df.groupby(['participant', activity_column]).size().reset_inde
 # --- BAR GRAPH ---
 plt.figure(figsize=(14, 7))
 
-# Use a high-contrast palette with as many colors as participants
+# High-contrast palette for participants
 num_participants = counts['participant'].nunique()
-palette = sns.color_palette("tab20", num_participants)  # 'tab20' gives distinct colors
+palette = sns.color_palette("tab20", num_participants)
 
 ax = sns.barplot(
     data=counts,
@@ -72,9 +74,9 @@ ax = sns.barplot(
     y="count",
     hue="participant",
     estimator=sum,
-    dodge=True,          # keeps bars for each participant side by side
+    dodge=True,       # side-by-side bars per activity
     palette=palette,
-    width=0.7            # slightly narrower bars to create gaps
+    width=.7         # slightly narrower bars for gaps between hues
 )
 
 plt.title("Number of Data Points per Activity per Participant", fontsize=16)
@@ -82,10 +84,9 @@ plt.xlabel("Activity", fontsize=12)
 plt.ylabel("Number of Data Points", fontsize=12)
 plt.xticks(rotation=45)
 
-# Adjust legend
+# Legend
 plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
-# Optional: add small gaps between groups by adjusting x-axis limits slightly
 plt.ylim(0, 600)
 
 # Save image
