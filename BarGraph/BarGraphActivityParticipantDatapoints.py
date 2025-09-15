@@ -1,83 +1,84 @@
-import os
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+from datetime import datetime
 
-# Paths
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "BarGraphs")
-output_path = os.path.join(output_folder, "BarGraph_ActivityParticipantDataPoints.png")
+timestamp_column = "time"
+activity_column = "class"
+heart_rate_column = "bpm"
+output_filename = "participant_activity_bargraph.png"
+
 os.makedirs(output_folder, exist_ok=True)
 
-# Find participant folders
+# Get all participant folders
 participant_folders = [
     f for f in os.listdir(root_path)
-    if os.path.isdir(os.path.join(root_path, f)) and f.startswith("P")
+    if f.startswith("P") and os.path.isdir(os.path.join(root_path, f))
 ]
 
-# Sort numerically
-def get_participant_number(name):
-    return int(name[1:])  # assumes format "P###"
-
-participant_folders = sorted(participant_folders, key=get_participant_number)
-
-# Collect counts per activity per participant
-records = []
+all_data = []
 
 for participant in participant_folders:
-    participant_path = os.path.join(root_path, participant, "OuraRing", "HeartRate")
-    
-    # Loop through activity files
-    
-    print("HELLO\n\n\n\n\n\n")
-    for file in os.listdir(participant_path):
-        if file.endswith(".csv") and "RAW" not in file:
-            print("YOOOO\n\n\n\n\n\n")
+    participant_number = participant
+    heart_rate_folder = os.path.join(root_path, participant, "OuraRing", "HeartRate")
 
+    csv_files = [
+        f for f in os.listdir(heart_rate_folder)
+        if f.endswith(".csv") and "RAW" not in f
+    ]
 
+    for file in csv_files:
+        # Extract date string
+        date_str = file[-14:-4]  # Assumes format: YYYY-MM-DD.csv
+        try:
+            file_date = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            continue
 
+        # Skip Fridays
+        if file_date.weekday() == 4:
+            continue
 
+        file_path = os.path.join(heart_rate_folder, file)
+        df = pd.read_csv(file_path)
 
+        df['participant'] = participant_number
+        all_data.append(df[[activity_column, 'participant']])
 
-            activity_name = os.path.splitext(file)[0]
-            
-            df = pd.read_csv(os.path.join(participant_path, file))
-            
-            # Count number of columns (data points)
-            count = df.shape[1]
-            print("HELP\n\n\n\n\n\n")
-            records.append({
-                "Participant": participant,
-                "Activity": activity_name,
-                "Count": count
-            })
+# Combine all data
+if not all_data:
+    print("No labeled CSV files with activities found.")
+    exit()
 
-# Convert to DataFrame
-counts_df = pd.DataFrame(records)
+combined_df = pd.concat(all_data, ignore_index=True)
 
-print(counts_df.head())
-print(counts_df.columns)
+# Count number of data points per activity per participant
+counts = combined_df.groupby(['participant', activity_column]).size().reset_index(name='count')
 
-
-# Plot bar graph
+# --- BAR GRAPH ---
 plt.figure(figsize=(12, 6))
-sns.barplot(
-    data=counts_df,
-    x="Activity",
-    y="Count",
-    hue="Participant",
-    palette="Spectral"
+ax = sns.barplot(
+    data=counts,
+    x="participant",
+    y="count",
+    hue=activity_column,
+    estimator=sum,     # Sum counts within each group
+    dodge=True
 )
 
 plt.title("Number of Data Points per Participant per Activity", fontsize=14)
-plt.xticks(rotation=45, ha="right")
+plt.xlabel("Participant")
 plt.ylabel("Number of Data Points")
-plt.xlabel("Activity")
-plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
+plt.xticks(rotation=45)
+plt.legend(title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
+
+# Save image
+output_path = os.path.join(output_folder, output_filename)
+plt.gcf().set_facecolor('white')
 plt.tight_layout()
-
-# Save figure
-plt.savefig(output_path, dpi=300)
-plt.close()
-
-print(f"Bar graph saved to {output_path}")
+plt.savefig(output_path)
+print(f"Saved activity bar graph to: {output_path}")
