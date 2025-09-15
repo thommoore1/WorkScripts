@@ -60,23 +60,33 @@ combined_df = pd.concat(all_data, ignore_index=True)
 counts = combined_df.groupby(['participant', activity_column]).size().reset_index(name='count')
 
 # --- BAR GRAPH ---
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(14, 7))
+
+# Use a high-contrast palette with as many colors as participants
+num_participants = counts['participant'].nunique()
+palette = sns.color_palette("tab20", num_participants)  # 'tab20' gives distinct colors
+
 ax = sns.barplot(
     data=counts,
-    x=activity_column,     # Activities on the x-axis
+    x=activity_column,
     y="count",
-    hue="participant",     # Each participant gets a separate bar
-    estimator=sum,         # Sum counts within each group
-    dodge=True
+    hue="participant",
+    estimator=sum,
+    dodge=True,          # keeps bars for each participant side by side
+    palette=palette,
+    width=0.7            # slightly narrower bars to create gaps
 )
 
-plt.title("Number of Data Points per Activity per Participant", fontsize=14)
-plt.xlabel("Activity")
-plt.ylabel("Number of Data Points")
+plt.title("Number of Data Points per Activity per Participant", fontsize=16)
+plt.xlabel("Activity", fontsize=12)
+plt.ylabel("Number of Data Points", fontsize=12)
 plt.xticks(rotation=45)
+
+# Adjust legend
 plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
-#plt.ylim(0, 600)  # focus on the range of interest
+# Optional: add small gaps between groups by adjusting x-axis limits slightly
+plt.ylim(0, 600)
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
