@@ -87,7 +87,7 @@ plt.xticks(rotation=45)
 # Legend
 plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
-plt.ylim(0, 600)
+#plt.ylim(0, 600)
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
