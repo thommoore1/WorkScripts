@@ -69,17 +69,16 @@ plt.figure(figsize=(14, 7))
 num_participants = combined_df['participant'].nunique()
 palette = sns.color_palette("tab20", num_participants)
 
-# Create a boxplot of counts per participant/activity
-# Using the raw combined_df instead of aggregated counts
+# Create a horizontal boxplot of heart rate by activity
 plt.figure(figsize=(12, 6))
 sns.boxplot(
     data=combined_df,
-    x=activity_column,
-    y=heart_rate_column,
+    y=activity_column,     # <-- swapped
+    x=heart_rate_column,   # <-- swapped
     palette="Set3"
 )
 plt.title("Heart Rate Distribution per Activity (All Participants)", fontsize=16)
-plt.xticks(rotation=45)
+plt.yticks(rotation=0)  # activities read horizontally, keep text normal
 plt.tight_layout()
 
 # Save image
