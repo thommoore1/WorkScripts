@@ -69,13 +69,17 @@ plt.figure(figsize=(14, 7))
 num_participants = combined_df['participant'].nunique()
 palette = sns.color_palette("tab20", num_participants)
 
+# Ensure participants are ordered (natural sort: P1, P2, ..., P10 instead of P1, P10, P2)
+participants_sorted = sorted(combined_df['participant'].unique(),
+                             key=lambda x: int(x[1:]) if x[1:].isdigit() else x)
+
 # Create a boxplot of counts per participant/activity
-# Using the raw combined_df instead of aggregated counts
 ax = sns.boxplot(
     data=combined_df,
     x=activity_column,
     y=heart_rate_column,   # boxplots show distribution of a numeric variable
     hue="participant",
+    hue_order=participants_sorted,   # ✅ enforce sorted legend
     palette=palette
 )
 
