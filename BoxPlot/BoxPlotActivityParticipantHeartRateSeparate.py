@@ -65,42 +65,49 @@ palette = sns.color_palette("tab20", num_participants)
 participants = sorted(combined_df['participant'].unique())
 participant_palette = dict(zip(participants, palette))
 
-# --- FACETED BOX PLOTS ---
-g = sns.catplot(
-    data=combined_df,
-    x=activity_column,
-    y=heart_rate_column,
-    col="participant",         # separate plot per participant
-    kind="box",
-    col_wrap=4,                # wrap into rows of 4
-    height=4,
-    aspect=1.2,
-    color=None,                # don’t use a single default color
-    palette=None
-)
+# --- FACETED BOX PLOTS (robust per-participant drawing) ---
+participants = sorted(combined_df['participant'].unique())
+num = len(participants)
+cols = 4
+rows = int(np.ceil(num / cols))
 
-# Apply consistent participant color for each subplot
-for ax, participant in zip(g.axes.flatten(), participants):
+fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+axes = axes.flatten()
+
+for i, participant in enumerate(participants):
+    ax = axes[i]
+    subset = combined_df[combined_df['participant'] == participant]
+
     sns.boxplot(
-        data=combined_df[combined_df['participant'] == participant],
+        data=subset,
         x=activity_column,
         y=heart_rate_column,
         ax=ax,
-        color=participant_palette[participant]
+        # Ensure box face + edges + median + whiskers use the participant color
+        boxprops=dict(facecolor=participant_palette[participant], edgecolor='black'),
+        medianprops=dict(color='black'),
+        whiskerprops=dict(color='black'),
+        capprops=dict(color='black'),
+        flierprops=dict(marker='o', markerfacecolor=participant_palette[participant], markeredgecolor='black')
     )
+
     ax.set_title(f"Participant {participant}")
     ax.set_xlabel("Activity")
     ax.set_ylabel("Heart Rate (bpm)")
     ax.tick_params(axis='x', rotation=45)
 
+# Remove any unused subplots
+for j in range(i + 1, len(axes)):
+    fig.delaxes(axes[j])
+
 plt.tight_layout()
 
 # Legend showing participant colors
-handles = [plt.Rectangle((0,0),1,1, color=participant_palette[p]) for p in participants]
-g.fig.legend(handles, participants, title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
+handles = [plt.Rectangle((0, 0), 1, 1, color=participant_palette[p]) for p in participants]
+fig.legend(handles, participants, title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
-g.fig.set_facecolor('white')
+fig.set_facecolor('white')
 plt.savefig(output_path, bbox_inches="tight")
 print(f"Saved activity box plot to: {output_path}")
