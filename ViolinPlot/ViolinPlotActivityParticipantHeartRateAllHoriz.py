@@ -6,11 +6,11 @@ import os
 from datetime import datetime
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "1_visualization/BoxPlots")
+output_folder = os.path.join(root_path, "1_visualization/ViolinPlot")
 timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "participant_activity_heartRate_separate.png"
+output_filename = "participant_activity_heartRate_all_horiz.png"
 
 os.makedirs(output_folder, exist_ok=True)
 
@@ -59,52 +59,36 @@ if not all_data:
 
 combined_df = pd.concat(all_data, ignore_index=True)
 
-# --- Replace participant palette with activity palette ---
-activities = sorted(combined_df[activity_column].unique())
-palette = sns.color_palette("Set3", len(activities))
-activity_palette = dict(zip(activities, palette))
+# Count number of data points per activity per participant
+counts = combined_df.groupby(['participant', activity_column]).size().reset_index(name='count')
 
-activities = sorted(combined_df[activity_column].unique())
+# --- BOX PLOT ---
+plt.figure(figsize=(14, 7))
 
-# --- FACETED BOX PLOTS (per participant) ---
-participants = sorted(combined_df['participant'].unique())
-num = len(participants)
-cols = 4
-rows = int(np.ceil(num / cols))
+# High-contrast palette for participants
+num_participants = combined_df['participant'].nunique()
+palette = sns.color_palette("tab20", num_participants)
 
-fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
-axes = axes.flatten()
+# Create a boxplot of counts per participant/activity
+# Using the raw combined_df instead of aggregated counts
+# --- VIOLIN PLOT (Horizontal) ---
+plt.figure(figsize=(7, 20))
+sns.violinplot(
+    data=combined_df,
+    y=activity_column,      # activities on the vertical axis
+    x=heart_rate_column,    # heart rate spread on horizontal axis
+    hue="participant",
+    split=True,
+    inner="quart",
+    palette="tab20"
+)
 
-for i, participant in enumerate(participants):
-    ax = axes[i]
-    subset = combined_df[combined_df['participant'] == participant]
-
-    sns.boxplot(
-        data=subset,
-        x=activity_column,
-        y=heart_rate_column,
-        ax=ax,
-        palette=activity_palette,   # <-- use activity-based coloring
-        order=activities
-    )
-
-    ax.set_title(f"Participant {participant}")
-    ax.set_xlabel("Activity")
-    ax.set_ylabel("Heart Rate (bpm)")
-    ax.tick_params(axis='x', rotation=45)
-
-# Remove any unused subplots
-for j in range(i + 1, len(axes)):
-    fig.delaxes(axes[j])
-
+plt.yticks(rotation=0)  # keep activity labels readable
 plt.tight_layout()
-
-# Legend showing activity colors
-handles = [plt.Rectangle((0, 0), 1, 1, color=activity_palette[a]) for a in activities]
-fig.legend(handles, activities, title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
-fig.set_facecolor('white')
-plt.savefig(output_path, bbox_inches="tight")
-print(f"Saved activity box plot to: {output_path}")
+plt.gcf().set_facecolor('white')
+plt.tight_layout()
+plt.savefig(output_path)
+print(f"Saved activity violin plot to: {output_path}")
