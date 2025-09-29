@@ -59,12 +59,14 @@ if not all_data:
 
 combined_df = pd.concat(all_data, ignore_index=True)
 
+# --- Compute global bounds for consistent y-axis ---
+y_min = combined_df[heart_rate_column].min()
+y_max = combined_df[heart_rate_column].max()
+
 # --- Replace participant palette with activity palette ---
 activities = sorted(combined_df[activity_column].unique())
 palette = sns.color_palette("Set3", len(activities))
 activity_palette = dict(zip(activities, palette))
-
-activities = sorted(combined_df[activity_column].unique())
 
 # --- FACETED BOX PLOTS (per participant) ---
 participants = sorted(combined_df['participant'].unique())
@@ -84,7 +86,7 @@ for i, participant in enumerate(participants):
         x=activity_column,
         y=heart_rate_column,
         ax=ax,
-        palette=activity_palette,   # <-- use activity-based coloring
+        palette=activity_palette,
         order=activities
     )
 
@@ -92,6 +94,9 @@ for i, participant in enumerate(participants):
     ax.set_xlabel("Activity")
     ax.set_ylabel("Heart Rate (bpm)")
     ax.tick_params(axis='x', rotation=45)
+
+    # --- Set consistent y-axis limits ---
+    ax.set_ylim(y_min, y_max)
 
 # Remove any unused subplots
 for j in range(i + 1, len(axes)):
