@@ -64,6 +64,10 @@ rows = int(np.ceil(num / cols))
 fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5))
 axes = axes.flatten()
 
+# Compute global y-axis limits
+y_min = combined_df[heart_rate_column].min()
+y_max = combined_df[heart_rate_column].max()
+
 for i, activity in enumerate(activities):
     ax = axes[i]
     subset = combined_df[combined_df[activity_column] == activity]
@@ -83,6 +87,9 @@ for i, activity in enumerate(activities):
     ax.set_xlabel("Participant")
     ax.set_ylabel("Heart Rate (bpm)")
     ax.tick_params(axis='x', rotation=45)
+    
+    # Set consistent y-axis
+    ax.set_ylim(y_min, y_max)
 
 # Remove any unused subplots
 for j in range(i + 1, len(axes)):

@@ -27,12 +27,11 @@ for pNum in participant_numbers:
     if pNum in ["04", "05", "09", "14", "16"]:
         scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
         scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
-        scheduleDataTu = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv") if pNum in ['14','16'] else None
+        if pNum in ['14', '16']:
+            scheduleDataTu = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
     else:
         scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
         scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
-        scheduleDataTu = None
-
     # Find leaf folders
     subFolders = [root for root, dirs, files in os.walk(dataPath) if not dirs]
 
