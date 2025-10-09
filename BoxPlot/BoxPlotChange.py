@@ -4,18 +4,29 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from datetime import datetime
+from matplotlib.colors import to_hex
+import colorsys
 
-# === CONFIGURATION ===
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/BoxPlots")
-timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "activity_participant_heartRate_colorPerActivity.png"
+output_filename = "activity_boxplots_gradientPerActivity.png"
 
 os.makedirs(output_folder, exist_ok=True)
 
-# === FIND PARTICIPANT FOLDERS ===
+# --- Function to create gradient colors with controlled lightness ---
+def create_gradient(base_color, n_colors=5, min_lightness=0.6, max_lightness=0.9):
+    r, g, b = base_color
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    gradient = []
+    for i in range(n_colors):
+        li = min_lightness + (max_lightness - min_lightness) * (i / (n_colors - 1))
+        ri, gi, bi = colorsys.hls_to_rgb(h, li, s)
+        gradient.append((ri, gi, bi))
+    return gradient
+
+# --- Load all participant data ---
 participant_folders = [
     f for f in os.listdir(root_path)
     if f.startswith("P") and os.path.isdir(os.path.join(root_path, f))
@@ -27,17 +38,13 @@ for participant in participant_folders:
     participant_number = participant
     heart_rate_folder = os.path.join(root_path, participant, "OuraRing", "HeartRate")
 
-    if not os.path.exists(heart_rate_folder):
-        continue
-
     csv_files = [
         f for f in os.listdir(heart_rate_folder)
         if f.endswith(".csv") and "RAW" not in f
     ]
 
     for file in csv_files:
-        # Extract date string (assumes format YYYY-MM-DD.csv)
-        date_str = file[-14:-4]
+        date_str = file[-14:-4]  # Assumes format: YYYY-MM-DD.csv
         try:
             file_date = datetime.strptime(date_str, "%Y-%m-%d")
         except ValueError:
@@ -50,77 +57,75 @@ for participant in participant_folders:
         file_path = os.path.join(heart_rate_folder, file)
         df = pd.read_csv(file_path)
 
-        # Shorten long activity names
         df['class'] = df['class'].replace('Homework Reinforcement/Study Hall', 'HW Reinfor')
         df['participant'] = participant_number
-
         all_data.append(df[[activity_column, heart_rate_column, 'participant']])
 
-# === COMBINE ALL DATA ===
 if not all_data:
     print("No labeled CSV files with activities found.")
     exit()
 
 combined_df = pd.concat(all_data, ignore_index=True)
 
-# === SETUP ===
-activities = sorted(combined_df[activity_column].unique())
-participants = sorted(combined_df['participant'].unique())
-
-# Global Y-limits for consistent comparison
+# --- Compute global y-axis bounds ---
 y_min = combined_df[heart_rate_column].min()
 y_max = combined_df[heart_rate_column].max()
 
-# One unique color per activity
-palette = sns.color_palette("Set2", len(activities))
-activity_palette = dict(zip(activities, palette))
+participants = sorted(combined_df['participant'].unique())
+activities = sorted(combined_df[activity_column].unique())
 
-# === GRID SETUP ===
+# --- FACETED BOX PLOTS (per activity) ---
 num = len(activities)
-cols = 4
+cols = 3
 rows = int(np.ceil(num / cols))
 
-fig, axes = plt.subplots(rows, cols, figsize=(cols * 4.5, rows * 4.5))
+fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5))
 axes = axes.flatten()
 
-# === PLOT PER ACTIVITY ===
+# Base colors per activity
+base_colors = sns.color_palette("Set2", len(activities))
+
 for i, activity in enumerate(activities):
     ax = axes[i]
     subset = combined_df[combined_df[activity_column] == activity]
 
-    # Single consistent color per activity
-    color = activity_palette[activity]
+    # Gradient across participants
+    gradient_palette = create_gradient(base_colors[i], n_colors=len(participants), min_lightness=0.6, max_lightness=0.9)
+    activity_color_map = dict(zip(participants, [to_hex(c) for c in gradient_palette]))
 
-    sns.boxplot(
-        data=subset,
-        x="participant",
-        y=heart_rate_column,
-        ax=ax,
-        color=color,
-        order=participants,
-        showfliers=False
-    )
+    # Draw boxplots per participant
+    for j, participant in enumerate(participants):
+        participant_data = subset[subset['participant'] == participant]
+        sns.boxplot(
+            x=[participant]*len(participant_data),
+            y=heart_rate_column,
+            data=participant_data,
+            ax=ax,
+            color=activity_color_map[participant],
+            order=participants,
+            showfliers=False
+        )
 
-    ax.set_title(f"{activity}")
-    ax.set_xlabel("Participant")
-    ax.set_ylabel("Heart Rate (bpm)")
-    ax.tick_params(axis='x', rotation=45)
+    ax.set_title(f"{activity}", fontsize=12)
+    ax.set_xlabel("Participant", fontsize=10)
+    ax.set_ylabel("Heart Rate (bpm)", fontsize=10)
     ax.set_ylim(y_min, y_max)
 
-# Remove unused subplots if any
+    # Rotate x-axis labels for readability
+    ax.tick_params(axis='x', rotation=45)
+    ax.set_xticklabels(ax.get_xticklabels(), fontsize=8, ha='right')
+
+
+# Remove unused subplots
 for j in range(i + 1, len(axes)):
     fig.delaxes(axes[j])
 
 plt.tight_layout()
-
-# === LEGEND ===
-handles = [plt.Rectangle((0, 0), 1, 1, color=activity_palette[a]) for a in activities]
-fig.legend(handles, activities, title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
-
-# === SAVE ===
-output_path = os.path.join(output_folder, output_filename)
 fig.set_facecolor('white')
+
+# Save figure
+output_path = os.path.join(output_folder, output_filename)
 plt.savefig(output_path, bbox_inches="tight", dpi=300)
 plt.close(fig)
 
-print(f"Saved box plots (per activity, color per activity) to: {output_path}")
+print(f"Saved activity-faceted gradient box plots to: {output_path}")
