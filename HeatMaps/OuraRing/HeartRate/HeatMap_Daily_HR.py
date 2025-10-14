@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "Heatmaps")
+output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
 timestamp_column = "time"
 bpm_column = "bpm"
 output_filename = "participant_avg_heart_rate_heatmap.png"
@@ -92,7 +92,7 @@ annot_data = annot_data.applymap(lambda x: "" if pd.isna(x) else f"{x:.1f}")
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, 4))
 ax = sns.heatmap(
     heatmap_data_masked,
-    cmap='viridis',
+    cmap='viridis_r',
     linewidths=0.5,
     linecolor='gray',
     cbar=True,

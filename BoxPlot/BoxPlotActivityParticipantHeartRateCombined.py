@@ -10,7 +10,7 @@ output_folder = os.path.join(root_path, "1_visualization/BoxPlots")
 timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "participant_activity_heartRate_combined.png"
+output_filename = "HR Per activity.png"
 
 os.makedirs(output_folder, exist_ok=True)
 

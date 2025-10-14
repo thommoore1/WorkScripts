@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "Heatmaps")
+output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
 timestamp_column = "time"
 output_filename = "participant_heatmap.png"
 

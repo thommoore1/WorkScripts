@@ -7,7 +7,7 @@ import numpy as np
 
 # Paths
 root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "Heatmaps")
+output_folder = os.path.join(root_path, "1_visualization/HeatMaps/OuraRing")
 os.makedirs(output_folder, exist_ok=True)
 
 # Find participant folders

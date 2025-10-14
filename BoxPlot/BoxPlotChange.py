@@ -11,7 +11,7 @@ root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/BoxPlots")
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "activity_boxplots_gradientPerActivity.png"
+output_filename = "HR per activity per participant.png"
 
 os.makedirs(output_folder, exist_ok=True)
 

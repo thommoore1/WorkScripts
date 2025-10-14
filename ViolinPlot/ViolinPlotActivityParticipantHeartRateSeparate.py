@@ -11,7 +11,7 @@ output_folder = os.path.join(root_path, "1_visualization/ViolinPlot")
 timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "activity_participant_heartRate.png"
+output_filename = "HR per activity per participant1.png"
 
 os.makedirs(output_folder, exist_ok=True)
 

@@ -88,7 +88,6 @@ plt.xticks(rotation=45)
 plt.legend(title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
 
 # Save image
-output_filename = "participant_activity_boxplot.png"
 output_path = os.path.join(output_folder, output_filename)
 plt.gcf().set_facecolor('white')
 plt.tight_layout()
