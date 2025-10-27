@@ -8,6 +8,7 @@ import numpy as np
 # === Paths ===
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
+fileName = "Participant_HeartRate_AvgBPM_Heatmap.png"
 os.makedirs(output_folder, exist_ok=True)
 
 # === Find participant folders ===
@@ -115,7 +116,7 @@ plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 
 # === Save output ===
-output_file = os.path.join(output_folder, "Participant_HeartRate_AvgBPM_Heatmap.png")
+output_file = os.path.join(output_folder, fileName)
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 
