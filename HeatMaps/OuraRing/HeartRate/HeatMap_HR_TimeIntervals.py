@@ -8,7 +8,7 @@ import numpy as np
 # === Paths ===
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
-fileName = "Participant_HeartRate_AvgBPM_Heatmap.png"
+fileName = "fig7_hr_hour.png"
 os.makedirs(output_folder, exist_ok=True)
 
 # === Find participant folders ===
@@ -111,7 +111,6 @@ sns.heatmap(
     cbar_kws={'label': 'Average Heart Rate (BPM)'}
 )
 
-plt.title("OuraRing Average Heart Rate\nby 30-Min Time Interval and Participant")
 plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 

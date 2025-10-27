@@ -77,7 +77,6 @@ sns.boxplot(
     x=heart_rate_column,   # <-- swapped
     palette="Set3"
 )
-plt.title("Heart Rate Distribution per Activity (All Participants)", fontsize=16)
 plt.yticks(rotation=0)  # activities read horizontally, keep text normal
 plt.tight_layout()
 

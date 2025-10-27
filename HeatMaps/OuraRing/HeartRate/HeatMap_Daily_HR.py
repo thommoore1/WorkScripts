@@ -10,7 +10,7 @@ root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
 timestamp_column = "time"
 bpm_column = "bpm"
-output_filename = "fig1_datapoint_acrossdays"
+output_filename = "fig1_HR_across_days"
 
 # Create Heatmaps folder if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)

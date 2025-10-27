@@ -10,7 +10,7 @@ output_folder = os.path.join(root_path, "1_visualization/HeatMaps/OuraRing")
 timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "participant_activity_heatmap.png"
+output_filename = "fig2_use_across_activities.png"
 
 os.makedirs(output_folder, exist_ok=True)
 
@@ -92,7 +92,6 @@ ax = sns.heatmap(
     vmax=650
 )
 
-plt.title('Number of Data Points per Activity per Participant', color='black', fontsize=14)
 plt.xlabel('Participant', color='black')
 plt.ylabel('Activity', color='black')
 ax.set_ylim(len(heatmap_data.index) + 0.5, -0.5)

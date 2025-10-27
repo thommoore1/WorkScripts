@@ -9,7 +9,7 @@ from datetime import datetime
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
 timestamp_column = "time"
-output_filename = "participant_heatmap.png"
+output_filename = "fig1_datapoint_across_days.png"
 
 # Create Heatmaps folder if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)
@@ -100,7 +100,6 @@ ax = sns.heatmap(
     square=False,
     annot=annot_data,
     fmt="",
-    annot_kws={"size": 8, "color": "black"},
     mask=heatmap_data_masked.isna(),
     vmin=heatmap_data.min().min(),
     vmax=850
@@ -117,7 +116,6 @@ plt.yticks(
     rotation=0
 )
 
-plt.title('Participant Activity Heatmap (Rows per Day)')
 plt.xlabel('Participant')
 plt.ylabel('')
 

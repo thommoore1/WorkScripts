@@ -7,6 +7,7 @@ import numpy as np
 
 # Paths
 root_path = "/Users/tommoore/Documents/GitHub/Research"
+fileName = "fig3_use_time_of_day.png"
 output_folder = os.path.join(root_path, "1_visualization/HeatMaps/OuraRing")
 os.makedirs(output_folder, exist_ok=True)
 
@@ -110,12 +111,11 @@ sns.heatmap(
     cbar_kws={'label': 'Number of Data Points'}
 )
 
-plt.title("OuraRing Heart Rate Data Points\nby 30-Min Time Interval and Participant")
 plt.xlabel("Participant")
 plt.ylabel("Time Interval")
 
 # Save output
-output_file = os.path.join(output_folder, "Participant_HeartRate_DataPoint_Heatmap.png")
+output_file = os.path.join(output_folder, fileName)
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()
 

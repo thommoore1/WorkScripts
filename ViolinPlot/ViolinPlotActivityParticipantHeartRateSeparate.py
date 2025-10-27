@@ -97,10 +97,6 @@ for j in range(i + 1, len(axes)):
 
 plt.tight_layout()
 
-# Legend for participants (one for the whole figure)
-handles = [plt.Rectangle((0, 0), 1, 1, color=participant_palette[p]) for p in participants]
-fig.legend(handles, participants, title="Participant", bbox_to_anchor=(1.05, 1), loc="upper left")
-
 # Save as a single PNG
 output_path = os.path.join(output_folder, output_filename)
 fig.set_facecolor('white')

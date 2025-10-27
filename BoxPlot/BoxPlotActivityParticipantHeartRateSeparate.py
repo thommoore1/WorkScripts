@@ -94,6 +94,8 @@ for i, participant in enumerate(participants):
     ax.set_xlabel("Activity")
     ax.set_ylabel("Heart Rate (bpm)")
     ax.tick_params(axis='x', rotation=45)
+    ax.set_xticklabels(ax.get_xticklabels(), ha='right')
+
 
     # --- Set consistent y-axis limits ---
     ax.set_ylim(y_min, y_max)
@@ -103,10 +105,6 @@ for j in range(i + 1, len(axes)):
     fig.delaxes(axes[j])
 
 plt.tight_layout()
-
-# Legend showing activity colors
-handles = [plt.Rectangle((0, 0), 1, 1, color=activity_palette[a]) for a in activities]
-fig.legend(handles, activities, title="Activity", bbox_to_anchor=(1.05, 1), loc="upper left")
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)

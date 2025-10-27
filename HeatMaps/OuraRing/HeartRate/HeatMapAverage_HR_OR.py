@@ -10,7 +10,7 @@ output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
 timestamp_column = "time"
 activity_column = "class"
 heart_rate_column = "bpm"
-output_filename = "participant_activity_avg_heart_rate_heatmap.png"
+output_filename = "fig6_hr_activity.png"
 
 os.makedirs(output_folder, exist_ok=True)
 
@@ -100,7 +100,6 @@ ax = sns.heatmap(
     fmt=""
 )
 
-plt.title('Average Heart Rate per Activity per Participant', color='black', fontsize=14)
 plt.xlabel('Participant', color='black')
 plt.ylabel('Activity', color='black')
 ax.set_ylim(len(heatmap_data.index) + 0.5, -0.5)
