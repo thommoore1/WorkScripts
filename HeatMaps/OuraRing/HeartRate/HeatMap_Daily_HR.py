@@ -88,46 +88,19 @@ heatmap_data_masked = heatmap_data.replace(0, np.nan)
 annot_data = heatmap_data_masked.copy()
 annot_data = annot_data.applymap(lambda x: "" if pd.isna(x) else f"{x:.1f}")
 
-mask = heatmap_data == 0
-vmin = 85
-vmax = np.nanmax(heatmap_data.values)
 # Plot
-cmap = plt.get_cmap("viridis_r")
 plt.figure(figsize=(len(heatmap_data.columns) * 0.8, 4))
 ax = sns.heatmap(
-    heatmap_data,
-    cmap=cmap,
+    heatmap_data_masked,
+    cmap='viridis_r',
     linewidths=0.5,
     linecolor='gray',
     cbar=True,
     square=False,
-    annot=False,
-    mask=mask,
-    vmin=vmin,
-    vmax=vmax,
+    fmt="",
+    annot=annot_data,
+    mask=heatmap_data_masked.isna(),
 )
-
-norm = plt.Normalize(vmin=vmin, vmax=vmax)
-rgba_colors = cmap(norm(heatmap_data.values))
-
-brightness = 0.2126 * rgba_colors[..., 0] + 0.7152 * rgba_colors[..., 1] + 0.0722 * rgba_colors[..., 2]
-text_colors = np.where(brightness < 0.4, "white", "black")
-
-# Add annotations with color adjustment
-for y in range(heatmap_data.shape[0]):
-    for x in range(heatmap_data.shape[1]):
-        val = heatmap_data.iloc[y, x]
-        if not mask.iloc[y, x]:
-            ax.text(
-                x + 0.5,
-                y + 0.5,
-                f"{val:.1f}",
-                ha="center",
-                va="center",
-                color=text_colors[y, x],
-                fontsize=8,
-                fontweight="semibold" if text_colors[y, x] == "white" else "normal"
-            )
 
 # Fix missing grid lines on edges
 ax.set_xlim(-0.5, len(heatmap_data_masked.columns) + 0.5)
@@ -140,6 +113,8 @@ plt.yticks(
     rotation=0
 )
 
+plt.xlabel('Participant')
+plt.ylabel('')
 
 # Save image to the Heatmaps folder
 output_path = os.path.join(output_folder, output_filename)
