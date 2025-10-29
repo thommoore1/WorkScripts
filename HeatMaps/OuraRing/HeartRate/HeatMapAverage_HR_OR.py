@@ -101,7 +101,7 @@ ax = sns.heatmap(
 )
 
 plt.xlabel('Participant', color='black')
-plt.ylabel('Activity', color='black')
+plt.ylabel('', color='black')
 ax.set_ylim(len(heatmap_data.index) + 0.5, -0.5)
 ax.set_xlim(-0.5, len(heatmap_data.columns) + 0.5)
 

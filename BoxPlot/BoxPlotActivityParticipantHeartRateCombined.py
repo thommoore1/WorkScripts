@@ -79,6 +79,7 @@ sns.boxplot(
 )
 plt.yticks(rotation=0)  # activities read horizontally, keep text normal
 plt.tight_layout()
+plt.ylabel('', color='black')
 
 # Save image
 output_path = os.path.join(output_folder, output_filename)
