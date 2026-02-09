@@ -8,9 +8,9 @@ import numpy as np
 # === Paths ===
 root_path = "/Users/tommoore/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing/Coverage")
-fileName_hr = "time_data.png"
-fileName_coverage = "time_coverage.png"
-fileName_csv = "time_coverage_metrics.csv"
+fileName_hr = "day_data.png"
+fileName_coverage = "day_coverage.png"
+fileName_csv = "day_coverage_metrics.csv"
 os.makedirs(output_folder, exist_ok=True)
 
 # === Find participant folders ===
@@ -25,18 +25,12 @@ def get_participant_number(name):
 
 participant_folders = sorted(participant_folders, key=get_participant_number)
 
-# === Define time bins ===
-# 30-min bins for HR averaging (original)
+# === Define weekdays (Monday=0 to Friday=4) ===
+weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+
+# === Define 5-min bins ===
 start_time = datetime.strptime("08:30", "%H:%M")
 end_time = datetime.strptime("15:00", "%H:%M")
-time_bins_30min = []
-temp_time = start_time
-while temp_time < end_time:
-    bin_end = temp_time + timedelta(minutes=30)
-    time_bins_30min.append((temp_time.time(), bin_end.time()))
-    temp_time = bin_end
-
-# 5-min bins for coverage calculation
 time_bins_5min = []
 temp_time = start_time
 while temp_time < end_time:
@@ -45,21 +39,21 @@ while temp_time < end_time:
     temp_time = bin_end
 
 # === Initialize dataframes ===
-# HR heatmap (30-min bins)
+# HR heatmap (by weekday)
 heatmap_hr = pd.DataFrame(
     0.0,
-    index=[f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}" for start, end in time_bins_30min],
+    index=weekday_names,
     columns=participant_folders
 )
 
-# Coverage heatmap (30-min bins for display, but calculated from 5-min bins)
+# Coverage heatmap (by weekday)
 heatmap_coverage = pd.DataFrame(
     0.0,
-    index=[f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}" for start, end in time_bins_30min],
+    index=weekday_names,
     columns=participant_folders
 )
 
-# Overall coverage metrics (per participant)
+# Overall coverage metrics (per participant, aggregated across weekdays)
 coverage_metrics = {p: {'total_bins': 0, 'covered_bins': 0} for p in participant_folders}
 
 # Safe time parser 
@@ -81,11 +75,11 @@ for participant in participant_folders:
     if not os.path.exists(hr_path):
         continue
 
-    # Track coverage across all valid days for this participant
-    participant_5min_coverage = {f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}": []
-                                  for start, end in time_bins_5min}
-    participant_30min_hr = {f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}": []
-                             for start, end in time_bins_30min}
+    # Track coverage and HR by weekday
+    participant_weekday_5min_coverage = {day: {f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}": []
+                                                for start, end in time_bins_5min}
+                                         for day in weekday_names}
+    participant_weekday_hr = {day: [] for day in weekday_names}
 
     for file in os.listdir(hr_path):
         if file.endswith(".csv") and "RAW" not in file:
@@ -95,9 +89,12 @@ for participant in participant_folders:
             except Exception:
                 continue
 
-            # Skip Fridays
-            if file_date.weekday() == 4:
+            # Only process Monday-Friday (0-4)
+            weekday = file_date.weekday()
+            if weekday > 4:  # Skip weekends
                 continue
+            
+            weekday_name = weekday_names[weekday]
 
             file_path = os.path.join(hr_path, file)
             df = pd.read_csv(file_path)
@@ -117,72 +114,45 @@ for participant in participant_folders:
                 
                 # Check if bin has at least 1 valid HR sample
                 has_valid_sample = bin_df['valid_hr'].any()
-                participant_5min_coverage[interval].append(1 if has_valid_sample else 0)
+                participant_weekday_5min_coverage[weekday_name][interval].append(1 if has_valid_sample else 0)
             
-            # === Calculate HR averages for 30-min bins ===
-            for start, end in time_bins_30min:
-                bin_df = df[df['TimeObj'].between(start, end) & df['valid_hr']]
-                interval = f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}"
+            # === Calculate HR averages for the entire day ===
+            valid_hr_df = df[df['TimeObj'].between(start_time.time(), end_time.time()) & df['valid_hr']]
+            if not valid_hr_df.empty:
+                mean_bpm = valid_hr_df['bpm'].mean()
+                participant_weekday_hr[weekday_name].append(mean_bpm)
+    
+    # === Aggregate coverage by weekday ===
+    total_5min_bins_all_days = 0
+    covered_5min_bins_all_days = 0
+    
+    for weekday_name in weekday_names:
+        # For each 5-min bin on this weekday, calculate % of days that had coverage
+        bins_for_this_weekday = []
+        
+        for interval, coverage_list in participant_weekday_5min_coverage[weekday_name].items():
+            if coverage_list:  # If we have data for this bin
+                coverage_pct = (sum(coverage_list) / len(coverage_list)) * 100
+                bins_for_this_weekday.append(coverage_pct)
                 
-                if not bin_df.empty:
-                    mean_bpm = bin_df['bpm'].mean()
-                    participant_30min_hr[interval].append(mean_bpm)
-    
-    # === Aggregate coverage across days ===
-    # For each 5-min bin, calculate % of days that had coverage
-    total_5min_bins = len(time_bins_5min)
-    covered_5min_bins = 0
-    
-    for interval, coverage_list in participant_5min_coverage.items():
-        if coverage_list:  # If we have data for this bin
-            coverage_pct = (sum(coverage_list) / len(coverage_list)) * 100
-            # For overall metrics, count as covered if >0% coverage
-            if sum(coverage_list) > 0:
-                covered_5min_bins += 1
-    
-    # Store overall coverage metrics
-    coverage_metrics[participant]['total_bins'] = total_5min_bins
-    coverage_metrics[participant]['covered_bins'] = covered_5min_bins
-    coverage_metrics[participant]['coverage_pct'] = (covered_5min_bins / total_5min_bins * 100) if total_5min_bins > 0 else 0
-    
-    # === Aggregate coverage into 30-min bins for heatmap ===
-    for start_30, end_30 in time_bins_30min:
-        interval_30 = f"{start_30.strftime('%H:%M')}-{end_30.strftime('%H:%M')}"
+                # For overall metrics across all weekdays
+                total_5min_bins_all_days += 1
+                if sum(coverage_list) > 0:
+                    covered_5min_bins_all_days += 1
         
-        # Find all 5-min bins within this 30-min bin
-        bins_in_30min = []
-        temp_time = datetime.combine(datetime.today(), start_30)
-        end_time_30 = datetime.combine(datetime.today(), end_30)
+        # Average coverage across all 5-min bins for this weekday
+        if bins_for_this_weekday:
+            heatmap_coverage.loc[weekday_name, participant] = np.mean(bins_for_this_weekday)
         
-        while temp_time < end_time_30:
-            bin_end = temp_time + timedelta(minutes=5)
-            interval_5 = f"{temp_time.time().strftime('%H:%M')}-{bin_end.time().strftime('%H:%M')}"
-            if interval_5 in participant_5min_coverage:
-                bins_in_30min.append(interval_5)
-            temp_time = bin_end
-        
-        # Calculate average coverage across 5-min bins within this 30-min window
-        all_coverage_values = []
-        for interval_5 in bins_in_30min:
-            if participant_5min_coverage[interval_5]:
-                avg_coverage = (sum(participant_5min_coverage[interval_5]) / 
-                               len(participant_5min_coverage[interval_5])) * 100
-                all_coverage_values.append(avg_coverage)
-        
-        if all_coverage_values:
-            heatmap_coverage.loc[interval_30, participant] = np.mean(all_coverage_values)
-    
-    # === Aggregate HR across days ===
-    for interval, hr_list in participant_30min_hr.items():
+        # Average HR for this weekday
+        hr_list = participant_weekday_hr[weekday_name]
         if hr_list:
-            heatmap_hr.loc[interval, participant] = np.mean(hr_list)
-
-# Force 12:00–12:30 bin for P14 and P16 to zero (both HR and coverage)
-interval_to_zero = "12:00-12:30"
-for p in ["P014", "P016"]:
-    if p in heatmap_hr.columns and interval_to_zero in heatmap_hr.index:
-        heatmap_hr.loc[interval_to_zero, p] = 0.0
-        heatmap_coverage.loc[interval_to_zero, p] = 0.0
+            heatmap_hr.loc[weekday_name, participant] = np.mean(hr_list)
+    
+    # Store overall coverage metrics (aggregated across all weekdays)
+    coverage_metrics[participant]['total_bins'] = total_5min_bins_all_days
+    coverage_metrics[participant]['covered_bins'] = covered_5min_bins_all_days
+    coverage_metrics[participant]['coverage_pct'] = (covered_5min_bins_all_days / total_5min_bins_all_days * 100) if total_5min_bins_all_days > 0 else 0
 
 # === Save coverage metrics to CSV ===
 coverage_df = pd.DataFrame(coverage_metrics).T
@@ -197,7 +167,7 @@ mask_hr = heatmap_hr == 0.0
 annot_hr = heatmap_hr.round(1).astype(str)
 annot_hr[mask_hr] = ""
 
-plt.figure(figsize=(14, 8))
+plt.figure(figsize=(14, 6))
 sns.heatmap(
     heatmap_hr,
     cmap="viridis_r",
@@ -210,9 +180,9 @@ sns.heatmap(
     vmax=130,
     cbar_kws={'label': 'Average Heart Rate (BPM)'}
 )
-plt.title('Heart Rate Heatmap (30-min bins)', fontsize=14, pad=20)
+plt.title('Heart Rate Heatmap by Weekday (8:30 AM - 3:00 PM)', fontsize=14, pad=20)
 plt.xlabel("Participant", fontsize=12)
-plt.ylabel("Time Interval", fontsize=12)
+plt.ylabel("Day of Week", fontsize=12)
 
 output_file_hr = os.path.join(output_folder, fileName_hr)
 plt.savefig(output_file_hr, dpi=300, bbox_inches='tight')
@@ -224,10 +194,10 @@ mask_coverage = heatmap_coverage == 0.0
 annot_coverage = heatmap_coverage.round(1).astype(str)
 annot_coverage[mask_coverage] = ""
 
-plt.figure(figsize=(14, 8))
+plt.figure(figsize=(14, 6))
 sns.heatmap(
     heatmap_coverage,
-    cmap="YlGnBu",  # Yellow-Green-Blue colormap (0% = light, 100% = dark)
+    cmap="YlGnBu",
     linewidths=0.5,
     linecolor='gray',
     annot=annot_coverage,
@@ -237,9 +207,9 @@ sns.heatmap(
     vmax=100,
     cbar_kws={'label': 'Data Coverage (%)'}
 )
-plt.title('Data Coverage Heatmap (5-min bin resolution)', fontsize=14, pad=20)
+plt.title('Data Coverage Heatmap by Weekday (5-min bin resolution)', fontsize=14, pad=20)
 plt.xlabel("Participant", fontsize=12)
-plt.ylabel("Time Interval (30-min display)", fontsize=12)
+plt.ylabel("Day of Week", fontsize=12)
 
 output_file_coverage = os.path.join(output_folder, fileName_coverage)
 plt.savefig(output_file_coverage, dpi=300, bbox_inches='tight')
