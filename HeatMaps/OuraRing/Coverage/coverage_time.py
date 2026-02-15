@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 # === Paths ===
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/Github/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing/Coverage")
 fileName_hr = "time_data.png"
 fileName_coverage = "time_coverage.png"
