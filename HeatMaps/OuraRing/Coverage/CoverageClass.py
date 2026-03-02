@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, time
 import numpy as np
 
 # === Paths ===
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/GitHub/Research"
 schedule_path = os.path.join(root_path, "Schedules")
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing/Coverage")
 
@@ -325,7 +325,7 @@ annot_coverage[mask_coverage] = ""
 plt.figure(figsize=(14, len(class_names) * 0.5))
 sns.heatmap(
     heatmap_coverage,
-    cmap="YlGnBu",
+    cmap="viridis_r",
     linewidths=0.5,
     linecolor='gray',
     annot=annot_coverage,

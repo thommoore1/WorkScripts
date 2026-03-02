@@ -227,7 +227,7 @@ annot_coverage[mask_coverage] = ""
 plt.figure(figsize=(14, 8))
 sns.heatmap(
     heatmap_coverage,
-    cmap="YlGnBu",  # Yellow-Green-Blue colormap (0% = light, 100% = dark)
+    cmap="viridis_r",
     linewidths=0.5,
     linecolor='gray',
     annot=annot_coverage,

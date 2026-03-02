@@ -6,8 +6,8 @@ import os
 
 from datetime import datetime
 
-root_path = "/Users/tommoore/Documents/GitHub/Research"
-output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing")
+root_path = "/Users/cibrian/Documents/Github/Research/"
+output_folder = os.path.join(root_path, "1_visualization/Heatmaps/OuraRing/DataPoints")
 timestamp_column = "time"
 output_filename = "fig1_datapoint_across_days.png"
 
