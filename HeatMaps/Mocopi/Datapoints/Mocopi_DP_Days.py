@@ -6,7 +6,7 @@ import os
 
 from datetime import datetime
 
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/DataPoints")
 timestamp_column = "time"
 output_filename = "Mocopi_DP_Days.png"

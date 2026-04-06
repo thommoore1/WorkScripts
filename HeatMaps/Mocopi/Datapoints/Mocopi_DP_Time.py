@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 # Paths
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/GitHub/Research"
 fileName = "Mocopi_DP_Time.png"
 output_folder = os.path.join(root_path, "1_visualization/HeatMaps/Mocopi/DataPoints")
 os.makedirs(output_folder, exist_ok=True)

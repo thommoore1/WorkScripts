@@ -5,7 +5,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/HeatMaps/Mocopi/DataPoints")
 timestamp_column = "time"
 activity_column = "class"
