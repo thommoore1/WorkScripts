@@ -8,7 +8,7 @@ import numpy as np
 # === Paths ===
 root_path = "/Users/cibrian/Documents/GitHub/Research"
 schedule_path = os.path.join(root_path, "Schedules")
-output_folder = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/Total")
+output_folder = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/AnkleL")
 
 fileName_hr = "class_data.png"
 fileName_coverage = "class_coverage.png"
@@ -69,7 +69,7 @@ for participant in participant_folders_raw:
 
     for root_dir, dirs, files in os.walk(hr_path):
         for f in files:
-            if not f.endswith('.csv'):
+            if not f.endswith('.csv') or f.find("AnkleL") == -1:
                 continue
             date_str = f[-14:-4]
             try:
@@ -175,7 +175,7 @@ for participant in participant_folders:
 
     for root_dir, dirs, files in os.walk(hr_path):
         for fname in files:
-            if not fname.endswith('.csv') or 'RAW' in fname:
+            if not fname.endswith('.csv') or 'RAW' in fname or 'AnkleL' not in fname:
                 continue
 
             # Bug 2 fix: extract date robustly using regex instead of fixed slice
@@ -293,7 +293,7 @@ sns.heatmap(
     annot=annot_cov, fmt='s', mask=mask_cov, vmin=0, vmax=100,
     cbar_kws={'label': 'Data Coverage (%)'}
 )
-plt.title('Data Coverage Heatmap by Class (5-min bin resolution)', fontsize=14, pad=20)
+plt.title('Left Ankle Data Coverage Heatmap by Class (5-min bin resolution)', fontsize=14, pad=20)
 plt.xlabel("Participant", fontsize=12)
 plt.ylabel("Class", fontsize=12)
 plt.savefig(os.path.join(output_folder, fileName_coverage), dpi=300, bbox_inches='tight')

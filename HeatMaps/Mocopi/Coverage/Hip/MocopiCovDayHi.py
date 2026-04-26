@@ -9,9 +9,9 @@ import numpy as np
 # === Paths ===
 root_path      = "/Users/cibrian/Documents/GitHub/Research"
 schedules_path = "/Users/cibrian/Documents/GitHub/Research/Schedules"
-output_folder  = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/Total")
-fileName_coverage = "day_coverage.png"
-fileName_csv      = "day_coverage_metrics.csv"
+output_folder  = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/Hip")
+fileName_coverage = "Hip_day_coverage.png"
+fileName_csv      = "Hip_day_coverage_metrics.csv"
 os.makedirs(output_folder, exist_ok=True)
 
 # === Classes to exclude ===
@@ -167,7 +167,7 @@ for participant in participant_folders:
     # Walk all CSV files under Mocopi/Labeled/ (mirrors Script 2's os.walk)
     for root_dir, dirs, files in os.walk(labeled_path):
         for fname in files:
-            if not fname.endswith('.csv'):
+            if not fname.endswith('.csv') or "Hip" not in fname:
                 continue
 
             # Robust date extraction (Script 2's regex approach)
@@ -255,7 +255,7 @@ sns.heatmap(
     vmin=0, vmax=100,
     cbar_kws={'label': 'Data Coverage (%)'}
 )
-plt.title('Mocopi Data Coverage Heatmap by Weekday (Class Times Only, 5-min bins)', fontsize=14, pad=20)
+plt.title('Hip Mocopi Data Coverage Heatmap by Weekday (Class Times Only, 5-min bins)', fontsize=14, pad=20)
 plt.xlabel("Participant", fontsize=12)
 plt.ylabel("Day of Week", fontsize=12)
 output_file_coverage = os.path.join(output_folder, fileName_coverage)

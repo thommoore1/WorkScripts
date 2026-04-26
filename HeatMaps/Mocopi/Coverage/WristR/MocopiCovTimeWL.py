@@ -8,9 +8,9 @@ import numpy as np
 
 # === Paths ===
 root_path = "/Users/cibrian/Documents/Github/Research"
-output_folder = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/Total")
-fileName_coverage = "time_coverage.png"
-fileName_csv = "time_coverage_metrics.csv"
+output_folder = os.path.join(root_path, "1_visualization/Heatmaps/Mocopi/Coverage/WristR")
+fileName_coverage = "WristR_time_coverage.png"
+fileName_csv = "WristR_time_coverage_metrics.csv"
 os.makedirs(output_folder, exist_ok=True)
 
 # === Find participant folders ===
@@ -77,7 +77,7 @@ for participant in participant_folders:
 
     for root_dir, dirs, files in os.walk(mocopi_path):
         for fname in files:
-            if not fname.endswith('.csv'):
+            if not fname.endswith('.csv') or "WristR" not in fname:
                 continue
 
             # Extract date robustly
@@ -180,7 +180,7 @@ sns.heatmap(
     vmax=100,
     cbar_kws={'label': 'Data Coverage (%)'}
 )
-plt.title('Mocopi Data Coverage Heatmap (5-min bin resolution, 30-min display)', fontsize=14, pad=20)
+plt.title('WristR Mocopi Data Coverage Heatmap (5-min bin resolution, 30-min display)', fontsize=14, pad=20)
 plt.xlabel("Participant", fontsize=12)
 plt.ylabel("Time Interval", fontsize=12)
 
