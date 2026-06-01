@@ -63,7 +63,7 @@ now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 
 participant_numbers = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "12", "14", "16"]
-rootPath = "/Users/tommoore/Documents/GitHub/Research"
+rootPath = "/Users/cibrian/Documents/GitHub/Research"
 
 
 
@@ -105,13 +105,13 @@ for pNum in participant_numbers:
 
     # Load schedule data
     if pNum in ["04", "05", "09", "14", "16"]:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
+        scheduleDataFri = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
         if pNum in ['14', '16']:
-            scheduleDataTu = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
+            scheduleDataTu = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
     else:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
+        scheduleDataFri = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
 
     # Add time & class columns
     zero_time = datetime(1900, 1, 1, 0, 0, 0).time()

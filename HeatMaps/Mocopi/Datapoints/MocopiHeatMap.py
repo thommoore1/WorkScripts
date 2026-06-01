@@ -7,7 +7,7 @@ import glob
 from datetime import datetime
 
 # ============ CONFIGURATION ============
-root_path = "/Users/tommoore/Documents/GitHub/Research"
+root_path = "/Users/cibrian/Documents/GitHub/Research"
 output_folder = os.path.join(root_path, "1_visualization/Heatmaps")
 output_filename = "mocopi_activity_participant_heatmap.png"
 
