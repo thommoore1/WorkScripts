@@ -29,7 +29,7 @@ def get_day_of_week(date_obj):
     return date_obj.strftime("%A")
 
 # --- New: bin generation helper ---
-BIN_MINUTES = 5
+BIN_MINUTES = 10
 
 def generate_bins(start_time, end_time, bin_minutes=BIN_MINUTES):
     """
