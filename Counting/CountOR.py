@@ -50,10 +50,15 @@ def generate_bins(start_time, end_time, bin_minutes=BIN_MINUTES):
 
 participant_numbers = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "12", "14", "16"]
 
+# --- Output location for the CSV summary ---
+OUTPUT_DIR = "/Users/cibrian/Documents/Github/Research/1_visualization/Bins"
+OUTPUT_CSV = os.path.join(OUTPUT_DIR, "bin_summary.csv")
+
 # --- Tracking totals across participants ---
 all_total_bins = []       # total number of 5-min class bins per participant
 all_true_bins = []        # bins with >=1 datapoint (before HR filtering)
 all_clean_true_bins = []  # bins with >=1 datapoint after HR filtering (40-180 bpm)
+processed_participants = []  # only participants that were actually processed (not skipped)
 
 for pNum in participant_numbers:
     print(f"Processing Participant P0{pNum}...")
@@ -167,6 +172,7 @@ for pNum in participant_numbers:
     all_total_bins.append(participant_total_bins)
     all_true_bins.append(participant_true_bins)
     all_clean_true_bins.append(participant_clean_true_bins)
+    processed_participants.append(pNum)
 
     print(f"  P0{pNum} — total 5-min class bins: {participant_total_bins}")
     print(f"  P0{pNum} — true bins (has data) before HR filter: {participant_true_bins}")
@@ -178,3 +184,24 @@ print(f"\n--- Summary across {len(all_true_bins)} participants ---")
 print(f"  Avg total 5-min class bins:                         {sum(all_total_bins) / len(all_total_bins):.1f}")
 print(f"  Avg true bins before HR filtering:                  {sum(all_true_bins) / len(all_true_bins):.1f}")
 print(f"  Avg true bins after HR filtering (40-180 bpm):      {sum(all_clean_true_bins) / len(all_clean_true_bins):.1f}")
+
+# --- Write per-participant results (+ an "AVERAGE" summary row) to CSV ---
+summary_df = pd.DataFrame({
+    "participant": [f"P0{p}" for p in processed_participants],
+    "total_bins": all_total_bins,
+    "true_bins_before_hr_filter": all_true_bins,
+    "true_bins_after_hr_filter": all_clean_true_bins,
+})
+
+avg_row = pd.DataFrame({
+    "participant": ["AVERAGE"],
+    "total_bins": [sum(all_total_bins) / len(all_total_bins)],
+    "true_bins_before_hr_filter": [sum(all_true_bins) / len(all_true_bins)],
+    "true_bins_after_hr_filter": [sum(all_clean_true_bins) / len(all_clean_true_bins)],
+})
+
+summary_df = pd.concat([summary_df, avg_row], ignore_index=True)
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+summary_df.to_csv(OUTPUT_CSV, index=False)
+print(f"\nSummary CSV written to: {OUTPUT_CSV}")
