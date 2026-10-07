@@ -43,6 +43,8 @@ VALID_CLASSES = [
     "Math",
     "Social Skills",
     "HW Rein./Study Hall",
+    "Lunch",
+    "PE",
 ]
 
 # ---- Oura daily-activity array decoding ----

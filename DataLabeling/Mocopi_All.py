@@ -133,7 +133,7 @@ for pNum in participant_numbers:
         DayOfWeek = get_day_of_week(datetime.fromtimestamp(dataFrame.iloc[0]['time']))
         if DayOfWeek == 'Friday':
             scheduleData = scheduleDataFri
-        elif DayOfWeek == 'Tuesday' and (pNum == "14" or pNum == "16"):
+        elif DayOfWeek == 'Tuesday' and (pNum == "14" or pNum == "16") and datetime.fromtimestamp(df.iloc[0]['time']).date() != datetime(2025, 4, 1).date():
             scheduleData = scheduleDataTu
         else:
             scheduleData = scheduleDataOth

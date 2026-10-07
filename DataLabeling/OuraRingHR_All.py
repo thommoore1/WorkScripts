@@ -33,7 +33,7 @@ participant_numbers = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "12
 for pNum in participant_numbers:
     print(f"Processing Participant P0{pNum}...")
 
-    rawDataPath = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/OuraRing/HeartRate/P0{pNum}OrHrRAW.csv"
+    rawDataPath = f"/Users/cibrian/Documents/GitHub/Research/P0{pNum}/OuraRing/HeartRate/P0{pNum}OrHrRAW.csv"
     if not os.path.exists(rawDataPath):
         print(f"Raw data not found for P0{pNum}, skipping...")
         continue
@@ -41,13 +41,13 @@ for pNum in participant_numbers:
     rawData = pd.read_csv(rawDataPath)
 
     if pNum in ["04", "05", "09", "14", "16"]:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
+        scheduleDataFri = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(04,05,09,14,16)_M-TH.csv")
         if pNum in ['14', '16']:
-            scheduleDataTu = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
+            scheduleDataTu = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(14,16)TU.csv")
     else:
-        scheduleDataFri = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
-        scheduleDataOth = pd.read_csv("/Users/tommoore/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
+        scheduleDataFri = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_FR.csv")
+        scheduleDataOth = pd.read_csv("/Users/cibrian/Documents/GitHub/Research/Schedules/schedData_P(01,02,03,06,07,08,12)_M-TH.csv")
 
     zero_time = datetime(1900, 1, 1, 0, 0, 0).time()
     rawData.insert(0, 'class', "NONE")
@@ -71,7 +71,7 @@ for pNum in participant_numbers:
     for df in dfList:
         timestamp = convert_iso_to_pacific_date(df.iloc[0]['timestamp'])
         date_str = timestamp.strftime("%Y-%m-%d")
-        file_path = f"/Users/tommoore/Documents/GitHub/Research/P0{pNum}/OuraRing/HeartRate/P0{pNum}OrHrLabeled{date_str}.csv"
+        file_path = f"/Users/cibrian/Documents/GitHub/Research/P0{pNum}/OuraRing/HeartRate/P0{pNum}OrHrLabeled{date_str}.csv"
         csvPathList.append(file_path)
         with open(file_path, 'w') as f:
             pass
@@ -85,7 +85,7 @@ for pNum in participant_numbers:
         DayOfWeek = get_day_of_week(datetime.fromtimestamp(df.iloc[0]['time']))
         if DayOfWeek == 'Friday':
             scheduleData = scheduleDataFri
-        elif DayOfWeek == 'Tuesday' and (pNum == "14" or pNum == "16"):
+        elif DayOfWeek == 'Tuesday' and (pNum == "14" or pNum == "16") and datetime.fromtimestamp(df.iloc[0]['time']).date() != datetime(2025, 4, 1).date():
             scheduleData = scheduleDataTu
         else:
             scheduleData = scheduleDataOth
